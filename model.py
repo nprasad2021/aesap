@@ -173,12 +173,12 @@ class Autoencoder(object):
         epoch = 0
 
         self.num_images_epoch = len(self.dataset.train_addrs)
-        for iEpoch in range(int(session.run(self.global_step)), opt.num_epochs):
+        for iEpoch in range(int(session.run(self.global_step)), self.opt.num_epochs):
             print('GLOBAL STEP:', session.run(self.global_step))
             epoch_start_time = time.time()
-            self.saver.save(session, opt.precursor + opt.log_dir_base + opt.category + opt.name + '/models/model', global_step=iEpoch)
+            self.saver.save(session, self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/model', global_step=iEpoch)
 
-            for iStep in range(int(num_images_epoch/opt.batch_size)):
+            for iStep in range(int(num_images_epoch/self.opt.batch_size)):
                 # Epoch Counter
                 iter_start_time = time.time()
                 self.train_iter(session, train_writer, val_writer, iStep, iEpoch)
@@ -189,7 +189,7 @@ class Autoencoder(object):
             sys.stdout.flush()
         session.run([self.inc_global_step])
         # save after finishing training epoch    
-        self.bestmodel_saver.save(session, opt.precursor + opt.log_dir_base + opt.category + opt.name + '/models/bestmodel')
+        self.bestmodel_saver.save(session, self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/bestmodel')
         train_writer.close()
         val_writer.close()
         print(':)')
