@@ -69,7 +69,7 @@ class Dataset:
 				labels = self.val_labels
 
 			write_filename = self.opt.tfr_out + trval + '.tfrecords'
-			if os.path.exists(write_filename) and self.opt.reuse_TFrecords:
+			if os.path.exists(write_filename) and self.opt.reuse_TFRecords:
 				continue
 
 			writer = tf.python_io.TFRecordWriter(write_filename)
