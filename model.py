@@ -199,7 +199,7 @@ class Autoencoder(object):
         process_imgs = []
         image_size = self.opt.image_size
 
-        for image in imgs:
+        for image in ims:
             image = tf.random_crop(image, [image_size, image_size, 3])
             image = tf.image.per_image_standardization(image)*self.opt.scale
             process_imgs.append(image)
