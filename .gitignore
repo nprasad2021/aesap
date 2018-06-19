@@ -1,0 +1,11 @@
+*.pdf
+*.csv
+.DS*
+*.pyc
+*.DS*
+*.txt
+!filepath.txt
+*.npz
+*.jpg
+!*.py
+./data/
