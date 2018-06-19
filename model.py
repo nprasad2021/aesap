@@ -43,7 +43,7 @@ class Autoencoder(object):
         gradients = tf.gradients(self.loss, params)
 
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
-        inc_global_step = tf.assign_add(self.global_step, 1, name='increment')
+        self.inc_global_step = tf.assign_add(self.global_step, 1, name='increment')
 
         grads = list(zip(gradients, params))
         for g, v in grads:
@@ -144,25 +144,25 @@ class Autoencoder(object):
         Main training function
         """
 
-        if not os.path.isfile(opt.precursor + opt.log_dir_base + opt.category + opt.name + '/models/checkpoint'):
+        if not os.path.isfile(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/checkpoint'):
             session.run(tf.global_variables_initializer())
-        elif opt.restart:
+        elif self.opt.restart:
             print("RESTART")
-            shutil.rmtree(opt.precursor + opt.log_dir_base + opt.category + opt.name + '/models/')
-            shutil.rmtree(opt.precursor + opt.log_dir_base + opt.category + opt.name + '/train/')
-            shutil.rmtree(opt.precursor + opt.log_dir_base + opt.category + opt.name + '/val/')
+            shutil.rmtree(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/')
+            shutil.rmtree(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/train/')
+            shutil.rmtree(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/val/')
             session.run(tf.global_variables_initializer())
         else:
             print("RESTORE")
-            self.saver.restore(session, tf.train.latest_checkpoint(opt.precursor + opt.log_dir_base + opt.category + opt.name + '/models/'))
+            self.saver.restore(session, tf.train.latest_checkpoint(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/'))
 
         self.training_handle = session.run(train_iterator.string_handle())
         self.validation_handle = session.run(val_iterator.string_handle())
 
         self.summaries = tf.summary.merge_all()
-        train_writer = tf.summary.FileWriter(opt.precursor + opt.log_dir_base + opt.category + opt.name + '/train', session.graph)
-        val_writer = tf.summary.FileWriter(opt.precursor + opt.log_dir_base + opt.category + opt.name + '/val')
-        print("STARTING EPOCH = ", session.run(global_step))
+        train_writer = tf.summary.FileWriter(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/train', session.graph)
+        val_writer = tf.summary.FileWriter(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/val')
+        print("STARTING EPOCH = ", session.run(self.global_step))
 
         parameters = tf.trainable_variables()
         num_parameters = sum(map(lambda t: np.prod(tf.shape(t.value()).eval()), parameters))
@@ -173,8 +173,8 @@ class Autoencoder(object):
         epoch = 0
 
         self.num_images_epoch = len(self.dataset.train_addrs)
-        for iEpoch in range(int(session.run(global_step)), opt.num_epochs):
-            print('GLOBAL STEP:', session.run(global_step))
+        for iEpoch in range(int(session.run(self.global_step)), opt.num_epochs):
+            print('GLOBAL STEP:', session.run(self.global_step))
             epoch_start_time = time.time()
             self.saver.save(session, opt.precursor + opt.log_dir_base + opt.category + opt.name + '/models/model', global_step=iEpoch)
 
@@ -187,7 +187,7 @@ class Autoencoder(object):
             epoch_execution_time = time.time() - epoch_start_time
             print("Epoch:%d, execution time:%f" % (epoch, epoch_execution_time))
             sys.stdout.flush()
-        session.run([inc_global_step])
+        session.run([self.inc_global_step])
         # save after finishing training epoch    
         self.bestmodel_saver.save(session, opt.precursor + opt.log_dir_base + opt.category + opt.name + '/models/bestmodel')
         train_writer.close()
