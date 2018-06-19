@@ -61,6 +61,7 @@ class Autoencoder(object):
         Adding placeholder
         """
         self.input_images, self.ans = self.iterator.get_next()
+        self.preprocess()
         tf.summary.image('input', self.input_images)
         self.learning_rate = tf.placeholder(tf.float32, shape=())
 
@@ -193,6 +194,20 @@ class Autoencoder(object):
         val_writer.close()
         print(':)')
 
+    def preprocess(self):
+        ims = tf.unstack(self.input_images, num=self.opt.batch_size, axis=0)
+        process_imgs = []
+        image_size = self.opt.image_size
+
+        for image in imgs:
+            image = tf.random_crop(image, [image_size, image_size, 3])
+            image = tf.image.per_image_standardization(image)*self.opt.scale
+            process_imgs.append(image)
+
+        self.input_images = tf.stack(process_imgs)
+
+
+
 def gradient_summaries(grad, var, opt):
 
     if opt.extense_summary:
@@ -200,4 +215,3 @@ def gradient_summaries(grad, var, opt):
         tf.summary.scalar(var.name + '/gradient_max', tf.reduce_max(grad))
         tf.summary.scalar(var.name + '/gradient_min', tf.reduce_min(grad))
         tf.summary.histogram(var.name + '/gradient', grad)
-

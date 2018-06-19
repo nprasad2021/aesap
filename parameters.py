@@ -34,6 +34,7 @@ class Experiment(object):
         self.batch_size = 128
         self.image_size = 224
         self.num_epochs = 20
+        self.scale = 128
 
         self.extense_summary = True
         self.restart = True

@@ -100,7 +100,6 @@ class Dataset:
 	def create_dataset(self, set_name, is_training):
 
 	    image_size = tf.cast(self.opt.image_size, tf.int32)
-	    smallest_side = tf.cast(256.0, tf.float32)
 	    # Transforms a scalar string `example_proto` into a pair of a scalar string and
 	    # a scalar integer, representing an image and its label, respectively.
 	    def _parse_function(example_proto):
@@ -113,42 +112,11 @@ class Dataset:
 	    	image = tf.image.decode_jpeg(parsed_features[set_name + '/image'],channels=3)
 	    	image = tf.cast(image, tf.float32)
 
-	    	_height = parsed_features[set_name + '/height']
-	    	_width = parsed_features[set_name + '/width']
-	    	height = tf.cast(_height, tf.int32)
-	    	width = tf.cast(_width, tf.int32)
-
-	    	S = tf.stack([height, width, 3])
+	    	S = tf.stack([tf.cast(parsed_features[set_name + '/height'], tf.int32),
+	    		tf.cast(parsed_features[set_name + '/width'], tf.int32), 3])
 	    	image = tf.reshape(image, S)
-
-	    	height = tf.cast(_height, tf.float32)
-	    	width = tf.cast(_width, tf.float32)
-
-	    	def if_true():
-	    		return smallest_side / width
-	    	def if_false():
-	    		return smallest_side / height
-	    	scale = tf.cond(_height > _width, if_true, if_false)
-	    	new_height = tf.multiply(height,scale)
-	    	new_width = tf.multiply(width,scale)
-	    	print(new_height.shape, 'height shape')
-	    	print(new_width.shape, 'width shape')
-	    	tf.cast(new_width, tf.int32)
-	    	tf.cast(new_height, tf.int32)
-
-	    	image = tf.image.resize_images(image, [new_height, new_width])
-
-	    	if is_training:
-	    		random_width = tf.random_uniform(minval=-0, maxval=new_width-image_size, dtype=tf.int32)
-	    		random_height = tf.random_uniform(minval=0, maxval=new_height-image_size, dtype=tf.int32)
-	    	else:
-	    		random_width = tf.cast((new_width/2 - image_size/2), tf.int32)
-	    		random_height = tf.cast((new_height/2 - image_size/2), tf.int32)
-
-	    	image = tf.image.crop_to_bounding_box(image, offset_height=random_height+image_size, target_height=image_size,
-				offset_width=random_width+image_size, target_width=image_size)
-	    	tf.cast(image, tf.float32)
-	    	image = ((image / 255 - 0.5)*2)
+	    	image = tf.image.resize_images(image, [image_size, image_size])
+	    	
 	    	return image, parsed_features[set_name + '/label']
 
 	    tfrecords_path = self.opt.tfr_out
