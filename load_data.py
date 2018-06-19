@@ -126,8 +126,12 @@ class Dataset:
 	    	def if_false():
 	    		return tf.cast(smallest_side / height, tf.float32)
 	    	scale = tf.cond(_height > _width, if_true, if_false)
-	    	new_height = tf.cast(height * scale, tf.int32)
-	    	new_width = tf.cast(width * scale, tf.int32)
+	    	new_height = height * scale
+	    	new_width = width * scale
+
+	    	tf.cast(new_width, tf.int32)
+	    	tf.cast(new_height, tf.int32)
+	    	
 	    	image = tf.image.resize_images(image, [new_height, new_width])
 
 	    	if is_training:
