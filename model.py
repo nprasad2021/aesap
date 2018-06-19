@@ -43,7 +43,7 @@ class Autoencoder(object):
         gradients = tf.gradients(self.loss, params)
 
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
-        inc_global_step = tf.assign_add(global_step, 1, name='increment')
+        inc_global_step = tf.assign_add(self.global_step, 1, name='increment')
 
         grads = list(zip(gradients, params))
         for g, v in grads:
