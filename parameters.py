@@ -8,7 +8,7 @@ class Experiment(object):
         self.category = 'initial'
         self.gpu = 2
 
-        self.reuse_TFRecords = False
+        self.reuse_TFRecords = True
         self.tdata = datatype
 
         ### Directory Details

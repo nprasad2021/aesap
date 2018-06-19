@@ -69,7 +69,7 @@ class Dataset:
 				labels = self.val_labels
 
 			write_filename = self.opt.tfr_out + trval + '.tfrecords'
-			if os.path.exists(write_filename) and not self.opt.reuse_TFrecords:
+			if os.path.exists(write_filename) and self.opt.reuse_TFrecords:
 				continue
 
 			writer = tf.python_io.TFRecordWriter(write_filename)
@@ -135,8 +135,7 @@ class Dataset:
 	    	image = tf.cast(((image / 255 - 0.5)*2), tf.float32)
 	    	return image, parsed_features[set_name + '/label']
 
-	    if not opt.reuse_TFrecords:
-	    	tfrecords_path = opt.tfr_out
+	    tfrecords_path = self.opt.tfr_out
 
 	    filenames = [tfrecords_path + set_name + '.tfrecords']
 	    dataset = tf.data.TFRecordDataset(filenames)

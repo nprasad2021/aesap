@@ -23,8 +23,8 @@ class Autoencoder(object):
         self.dataset = load_data.Dataset(opt)
 
         ## Repeatable Dataset for Training
-        train_dataset = dataset.create_dataset(set_name='train', is_training=True)
-        val_dataset = dataset.create_dataset(set_name='val', is_training=True)
+        train_dataset = self.dataset.create_dataset(set_name='train', is_training=True)
+        val_dataset = self.dataset.create_dataset(set_name='val', is_training=True)
 
         # Handles to switch datasets
         self.handle = tf.placeholder(tf.string, shape=[])
