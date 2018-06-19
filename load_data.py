@@ -121,7 +121,7 @@ class Dataset:
 
 	    	S = tf.stack([height, width, 3])
 	    	image = tf.reshape(image, S)
-	    	scale = tf.cast(smallest_side / width if _height > _width else smallest_side / height, tf.float32)
+	    	scale = tf.cast(smallest_side / width, tf.float32) if _height > _width else tf.cast(smallest_side / height, tf.float32)
 	    	new_height = tf.cast(height * scale, tf.int32)
 	    	new_width = tf.cast(width * scale, tf.int32)
 	    	image = tf.image.resize_images(image, [new_height, new_width])
