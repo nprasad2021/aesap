@@ -122,9 +122,9 @@ class Dataset:
 	    	image = tf.reshape(image, S)
 
 	    	def if_true():
-	    		scale_t = tf.cast(smallest_side / width, tf.float32)
+	    		return tf.cast(smallest_side / width, tf.float32)
 	    	def if_false():
-	    		scale_f = tf.cast(smallest_side / height, tf.float32)
+	    		return tf.cast(smallest_side / height, tf.float32)
 	    	scale = tf.cond(_height > _width, if_true, if_false)
 	    	new_height = tf.cast(height * scale, tf.int32)
 	    	new_width = tf.cast(width * scale, tf.int32)
