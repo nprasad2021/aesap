@@ -115,8 +115,8 @@ class Dataset:
 
 	    	_height = parsed_features[set_name + '/height']
 	    	_width = parsed_features[set_name + '/width']
-	    	height = tf.cast(_height, tf.int32)
-	    	width = tf.cast(_width, tf.int32)
+	    	height = tf.cast(_height, tf.float32)
+	    	width = tf.cast(_width, tf.float32)
 
 	    	S = tf.stack([height, width, 3])
 	    	image = tf.reshape(image, S)
@@ -131,7 +131,7 @@ class Dataset:
 
 	    	tf.cast(new_width, tf.int32)
 	    	tf.cast(new_height, tf.int32)
-	    	
+
 	    	image = tf.image.resize_images(image, [new_height, new_width])
 
 	    	if is_training:
@@ -143,7 +143,8 @@ class Dataset:
 
 	    	image = tf.image.crop_to_bounding_box(image, offset_height=random_height+image_size, target_height=image_size,
 				offset_width=random_width+image_size, target_width=image_size)
-	    	image = tf.cast(((image / 255 - 0.5)*2), tf.float32)
+	    	tf.cast(image, tf.float32)
+	    	image = ((image / 255 - 0.5)*2)
 	    	return image, parsed_features[set_name + '/label']
 
 	    tfrecords_path = self.opt.tfr_out
