@@ -111,15 +111,18 @@ class Dataset:
 
 	    	parsed_features = tf.parse_single_example(example_proto, features)
 	    	image = tf.image.decode_jpeg(parsed_features[set_name + '/image'],channels=3)
-	    	image = tf.cast(image, tf.int32)
+	    	image = tf.cast(image, tf.float32)
 
 	    	_height = parsed_features[set_name + '/height']
 	    	_width = parsed_features[set_name + '/width']
-	    	height = tf.cast(_height, tf.float32)
-	    	width = tf.cast(_width, tf.float32)
+	    	height = tf.cast(_height, tf.int32)
+	    	width = tf.cast(_width, tf.int32)
 
 	    	S = tf.stack([height, width, 3])
 	    	image = tf.reshape(image, S)
+
+	    	height = tf.cast(_height, tf.float32)
+	    	width = tf.cast(_width, tf.float32)
 
 	    	def if_true():
 	    		return tf.cast(smallest_side / width, tf.float32)
