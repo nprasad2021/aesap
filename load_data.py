@@ -111,7 +111,7 @@ class Dataset:
 
 	    	parsed_features = tf.parse_single_example(example_proto, features)
 	    	image = tf.image.decode_jpeg(parsed_features[set_name + '/image'],channels=3)
-	    	image = tf.cast(image, tf.float32)
+	    	image = tf.cast(image, tf.int32)
 
 	    	_height = parsed_features[set_name + '/height']
 	    	_width = parsed_features[set_name + '/width']
