@@ -1,6 +1,6 @@
 class Experiment(object):
 
-    def __init__(self, identity=0, name='base', precursor='/Users/i869533/Documents/aesap/', datatype = 'all_data'):
+    def __init__(self, identity=0, name='base', precursor='/Users/i869533/Documents/aesap/', datatype = 'sap_data'):
         
         # Indexing
         self.ID = identity
