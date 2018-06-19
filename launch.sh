@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -n 4
-#SBATCH --array=0-1152
+#SBATCH --array=0-999
 #SBATCH --job-name=autoencoder
 #SBATCH --mem=10GB
 #SBATCH -t 06:30:00
