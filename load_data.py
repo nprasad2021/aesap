@@ -113,12 +113,15 @@ class Dataset:
 	    	image = tf.image.decode_jpeg(parsed_features[set_name + '/image'],channels=3)
 	    	image = tf.cast(image, tf.float32)
 
-	    	height = tf.cast(parsed_features[set_name + '/height'], tf.int32)
-	    	width = tf.cast(parsed_features[set_name + '/width'], tf.int32)
+	    	_height = parsed_features[set_name + '/height']
+	    	_width = parsed_features[set_name + '/width']
+
+	    	height = tf.cast(_height, tf.int32)
+	    	width = tf.cast(_width, tf.int32)
 
 	    	S = tf.stack([height, width, 3])
 	    	image = tf.reshape(image, S)
-	    	scale = tf.cast(smallest_side / width if height > width else smallest_side / height, tf.float32)
+	    	scale = tf.cast(smallest_side / width if _height > _width else smallest_side / height, tf.float32)
 	    	new_height = tf.cast(height * scale, tf.int32)
 	    	new_width = tf.cast(width * scale, tf.int32)
 	    	image = tf.image.resize_images(image, [new_height, new_width])
@@ -139,7 +142,7 @@ class Dataset:
 
 	    filenames = [tfrecords_path + set_name + '.tfrecords']
 	    dataset = tf.data.TFRecordDataset(filenames)
-	    dataset = dataset.map(_parse_function, num_parallel_calls=self.num_threads)
+	    dataset = dataset.map(_parse_function)
 	    dataset = dataset.repeat()  # Repeat the input indefinitely.
 	    return dataset.batch(self.opt.batch_size)
 
