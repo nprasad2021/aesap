@@ -100,7 +100,7 @@ class Dataset:
 	def create_dataset(self, set_name, is_training):
 
 	    image_size = tf.cast(self.opt.image_size, tf.int32)
-	    smallest_side = tf.cast(256.0, tf.int32)
+	    smallest_side = tf.cast(256.0, tf.float32)
 	    # Transforms a scalar string `example_proto` into a pair of a scalar string and
 	    # a scalar integer, representing an image and its label, respectively.
 	    def _parse_function(example_proto):
@@ -125,9 +125,9 @@ class Dataset:
 	    	width = tf.cast(_width, tf.float32)
 
 	    	def if_true():
-	    		return tf.cast(smallest_side / width, tf.float32)
+	    		return smallest_side / width
 	    	def if_false():
-	    		return tf.cast(smallest_side / height, tf.float32)
+	    		return smallest_side / height
 	    	scale = tf.cond(_height > _width, if_true, if_false)
 	    	new_height = height * scale
 	    	new_width = width * scale
