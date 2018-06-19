@@ -8,13 +8,15 @@ import sys
 # os.environ["TF_CPP_MIN_LOG_LEVEL"]="2"
 
 import tensorflow as tf
-import model, parameters
+import model, inst
 
 
 def main():
     # load image names with full dir info and corresponding labels
     precursor = sys.argv[1]
-    opt = parameters.Experiment(precursor=precursor)
+    ID = sys.argv[2]
+
+    opt = inst.gen_tune_exp(precursor)[ID]
     # start training from scratch
     if opt.mode == "train":
         new_model = model.Autoencoder(opt)

@@ -109,7 +109,9 @@ class Autoencoder(object):
         """
         with tf.variable_scope("loss"):
             diff = self.input_images - self.output_images
-            self.loss = tf.divide(tf.nn.l2_loss(diff), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
+            if self.opt.loss == 'l2':
+                self.loss = tf.divide(tf.nn.l2_loss(diff), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
+            else: self.loss = tf.divide(tf.reduce_sum(tf.abs(diff)), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
             tf.summary.scalar("loss", self.loss)
 
     def train_iter(self, session, train_writer, val_writer, iStep, iEpoch):
@@ -130,6 +132,14 @@ class Autoencoder(object):
 
             [_, summaries, global_step, loss] = session.run(output_feed, feed_dict_val)
             val_writer.add_summary(summaries, k)
+
+            if iEpoch == self.opt.num_epochs - 1:
+                if not os.path.isfile(self.opt.precursor + self.opt.outfile):
+                    open(self.opt.precursor + self.opt.outfile, 'a').close()
+                with open(self.opt.precursor + self.opt.outfile, 'a+') as f:
+                    f.write(str(self.opt.ID) + ',' + str(loss)[0:3])
+                    f.write('\n')
+
             print('val loss:', loss)
             sys.stdout.flush()
         else:
@@ -173,7 +183,7 @@ class Autoencoder(object):
         epoch = 0
 
         self.num_images_epoch = len(self.dataset.train_addrs)
-        for iEpoch in range(int(session.run(self.global_step)), self.opt.num_epochs):
+        for iEpoch in range(self.opt.num_epochs):
             print('GLOBAL STEP:', session.run(self.global_step))
             epoch_start_time = time.time()
             self.saver.save(session, self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/model', global_step=iEpoch)
@@ -194,6 +204,7 @@ class Autoencoder(object):
         val_writer.close()
         print(':)')
 
+
     def preprocess(self):
         ims = tf.unstack(self.input_images, num=self.opt.batch_size, axis=0)
         process_imgs = []
@@ -201,7 +212,7 @@ class Autoencoder(object):
 
         for image in ims:
             image = tf.random_crop(image, [image_size, image_size, 3])
-            image = tf.image.per_image_standardization(image)*self.opt.scale
+            image = tf.image.per_image_standardization(image)*self.opt.scale + self.opt.slide
             process_imgs.append(image)
 
         self.input_images = tf.stack(process_imgs)

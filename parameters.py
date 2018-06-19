@@ -25,16 +25,19 @@ class Experiment(object):
         self.decay_every = 1000
         self.learning_rate = .0005
         self.decaying_rate = 1.0
+        self.loss = 'l2'
 
         self.mode = 'train'
         self.train_dir = self.precursor + 'data/' + self.tdata +  '/train/' # Training Directory
         self.val_dir = self.precursor + 'data/' + self.tdata + '/val/' # Validation Directory
+        self.outfile = 'finalresults.txt'
 
         #### Hyperparameters
         self.batch_size = 128
         self.image_size = 224
-        self.num_epochs = 20
+        self.num_epochs = 100
         self.scale = 128
+        self.slide = 0
 
         self.extense_summary = True
         self.restart = True
