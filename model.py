@@ -31,8 +31,8 @@ class Autoencoder(object):
         self.iterator = tf.data.Iterator.from_string_handle(
             self.handle, train_dataset.output_types, train_dataset.output_shapes)
 
-        train_iterator = train_dataset.make_one_shot_iterator()
-        val_iterator = val_dataset.make_one_shot_iterator()
+        self.train_iterator = train_dataset.make_one_shot_iterator()
+        self.val_iterator = val_dataset.make_one_shot_iterator()
 
         with tf.variable_scope("one_shot_ae", initializer=tf.contrib.layers.variance_scaling_initializer(factor=1.0, uniform=True)):
             self.add_placeholders()
@@ -156,8 +156,8 @@ class Autoencoder(object):
             print("RESTORE")
             self.saver.restore(session, tf.train.latest_checkpoint(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/'))
 
-        self.training_handle = session.run(train_iterator.string_handle())
-        self.validation_handle = session.run(val_iterator.string_handle())
+        self.training_handle = session.run(self.train_iterator.string_handle())
+        self.validation_handle = session.run(self.val_iterator.string_handle())
 
         self.summaries = tf.summary.merge_all()
         train_writer = tf.summary.FileWriter(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/train', session.graph)
