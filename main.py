@@ -14,8 +14,11 @@ import model, inst
 def main():
     # load image names with full dir info and corresponding labels
     precursor = sys.argv[1]
-    ID = sys.argv[2]
+    ID = int(sys.argv[2])
+    factor = int(sys.argv[3])
 
+    ID = ID + factor*1000
+    
     opt = inst.gen_tune_exp(precursor)[ID]
     # start training from scratch
     if opt.mode == "train":
