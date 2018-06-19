@@ -133,7 +133,7 @@ class Autoencoder(object):
             print('val loss:', loss)
             sys.stdout.flush()
         else:
-            session.run(output_feed, feed_dict_train)
+            [_, summaries, global_step, loss] = session.run(output_feed, feed_dict_train)
 
         # Scheduling learning rate
         if int(global_step + 1) % self.opt.decay_every == 0:
