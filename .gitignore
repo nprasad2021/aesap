@@ -8,4 +8,4 @@
 *.npz
 *.jpg
 !*.py
-./data/
+data/
