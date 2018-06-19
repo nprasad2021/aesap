@@ -6,5 +6,5 @@
 #SBATCH --workdir=/om/user/nprasad/aesap/subs/
 #SBATCH --qos=cbmm
 
-singularity exec -B /om:/om --nv /om/user/nprasad/singularity/xboix-localtensorflow.img \
+singularity exec -B /om:/om --nv /om/user/nprasad/singularity/tensorflow-1.8.0-gpu-py3.img \
 python /om/user/nprasad/aesap/main.py /om/user/nprasad/aesap/

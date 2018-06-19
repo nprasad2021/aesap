@@ -6,4 +6,4 @@
 #SBATCH --workdir=/om/user/nprasad/aesap/subs/
 #SBATCH --qos=cbmm
 
-python /om/user/nprasad/aesap/main.py /om/user/nprasad/aesap/
+python3 /om/user/nprasad/aesap/main.py /om/user/nprasad/aesap/

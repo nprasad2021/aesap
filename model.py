@@ -55,7 +55,6 @@ class Autoencoder(object):
         # save network
         self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=self.opt.keep)
         self.bestmodel_saver = tf.train.Saver(tf.global_variables(), max_to_keep=1)
-        self.summaries = tf.summary.merge_all()
 
     def add_placeholders(self):
         """
