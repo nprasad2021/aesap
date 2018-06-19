@@ -178,7 +178,7 @@ class Autoencoder(object):
             epoch_start_time = time.time()
             self.saver.save(session, self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/model', global_step=iEpoch)
 
-            for iStep in range(int(num_images_epoch/self.opt.batch_size)):
+            for iStep in range(int(self.num_images_epoch/self.opt.batch_size)):
                 # Epoch Counter
                 iter_start_time = time.time()
                 self.train_iter(session, train_writer, val_writer, iStep, iEpoch)
