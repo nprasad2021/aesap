@@ -129,9 +129,10 @@ class Dataset:
 	    	def if_false():
 	    		return smallest_side / height
 	    	scale = tf.cond(_height > _width, if_true, if_false)
-	    	new_height = height * scale
-	    	new_width = width * scale
-
+	    	new_height = tf.multiply(height,scale)
+	    	new_width = tf.multiply(width,scale)
+	    	print(new_height.shape, 'height shape')
+	    	print(new_width.shape, 'width shape')
 	    	tf.cast(new_width, tf.int32)
 	    	tf.cast(new_height, tf.int32)
 
