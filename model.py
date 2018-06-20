@@ -23,8 +23,8 @@ class Autoencoder(object):
         self.dataset = load_data.Dataset(opt)
 
         ## Repeatable Dataset for Training
-        train_dataset = self.dataset.create_dataset(set_name='train', is_training=True)
-        val_dataset = self.dataset.create_dataset(set_name='val', is_training=True)
+        train_dataset = self.dataset.create_dataset(set_name='train')
+        val_dataset = self.dataset.create_dataset(set_name='val')
 
         # Handles to switch datasets
         self.handle = tf.placeholder(tf.string, shape=[])
@@ -90,6 +90,7 @@ class Autoencoder(object):
         self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
         self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
         self.output_images = self.decoder_4
+        tf.summary.image('output', self.output_images)
 
     def conv2d(self, bottom, filters, kernel_size=[5,5], stride=2, padding="SAME", name="conv2d"):
         layer = tf.layers.conv2d(bottom, filters, kernel_size, stride, padding)
@@ -122,22 +123,24 @@ class Autoencoder(object):
         feed_dict_train = {self.learning_rate:self.opt.learning_rate, self.handle:self.training_handle}
         feed_dict_val = {self.learning_rate:self.opt.learning_rate, self.handle:self.validation_handle}
 
-        output_feed = [self.updates, self.summaries, self.global_step, self.loss]
+        output_feed_train = [self.updates, self.summaries, self.global_step, self.loss]
+        output_feed_val = [self.summaries, self.global_step, self.loss]
+
         if iStep == 0:
             print("* epoch: " + str(float(k) / float(self.num_images_epoch)))
-            [_, summaries, global_step, loss] = session.run(output_feed, feed_dict_train)
+            [_, summaries, global_step, loss] = session.run(output_feed_train, feed_dict_train)
             train_writer.add_summary(summaries, k)
             print('train loss:', loss)
             sys.stdout.flush()
 
-            [_, summaries, global_step, loss] = session.run(output_feed, feed_dict_val)
+            [summaries, global_step, loss] = session.run(output_feed_val, feed_dict_val)
             val_writer.add_summary(summaries, k)
 
             if iEpoch == self.opt.num_epochs - 1:
                 if not os.path.isfile(self.opt.precursor + self.opt.outfile):
                     open(self.opt.precursor + self.opt.outfile, 'a').close()
                 with open(self.opt.precursor + self.opt.outfile, 'a+') as f:
-                    f.write(str(self.opt.ID) + ',' + str(loss)[0:3])
+                    f.write(str(self.opt.ID) + ',' + str(loss))
                     f.write('\n')
 
             print('val loss:', loss)

@@ -96,8 +96,8 @@ class Dataset:
 		self.load_data()
 		self.write_TFRecords()
 
-
-	def create_dataset(self, set_name, is_training):
+	##### NON-REPEATABLE DATASET
+	def create_dataset(self, set_name, repeat=True):
 
 	    image_size = tf.cast(self.opt.image_size, tf.int32)
 	    # Transforms a scalar string `example_proto` into a pair of a scalar string and
@@ -124,7 +124,8 @@ class Dataset:
 	    filenames = [tfrecords_path + set_name + '.tfrecords']
 	    dataset = tf.data.TFRecordDataset(filenames)
 	    dataset = dataset.map(_parse_function)
-	    dataset = dataset.repeat()  # Repeat the input indefinitely.
+	    if repeat:
+	    	dataset = dataset.repeat()  # Repeat the input indefinitely.
 	    return dataset.batch(self.opt.batch_size)
 
 class ImageCoder(object):
