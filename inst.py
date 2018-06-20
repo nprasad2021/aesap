@@ -4,7 +4,7 @@ import parameters
 #### PARAMETERS
 dsts = ['sap_data', 'all_data', 'open_data']
 lrs = [.005, .001, .0005, .0001]
-img_sizes = [100, 150, 200, 224]
+img_sizes = [112, 144, 192, 224]
 scale = [1,32,64,128]
 slide = [0, 64, -64]
 loss = ['l2', 'l1']
