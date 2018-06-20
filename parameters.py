@@ -5,7 +5,7 @@ class Experiment(object):
         # Indexing
         self.ID = identity
         self.name = 'ID' + str(self.ID) + "_" + name
-        self.category = 'initial'
+        self.category = 'initial/'
         self.gpu = 2
 
         self.reuse_TFRecords = True
