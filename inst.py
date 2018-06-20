@@ -2,6 +2,7 @@
 import parameters
 
 #### PARAMETERS
+# Final TUNING
 dsts = ['sap_data', 'all_data', 'open_data']
 lrs = [.005, .001, .0005, .0001]
 img_sizes = [112, 144, 192, 224]
