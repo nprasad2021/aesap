@@ -286,7 +286,7 @@ class Autoencoder(object):
 
         for mini in range(num_iter):
 
-            lat_vec, input_im_1, input_im, output_im, label, mn, std = session.run(output_feed, feed_dict_val)
+            lat_vec, input_im, input_im_1, output_im, label, mn, std = session.run(output_feed, feed_dict_val)
 
             #print(input_im.shape, 'input images shape')
             #print(output_im.shape, 'output images shape')
