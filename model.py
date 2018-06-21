@@ -251,8 +251,8 @@ class Autoencoder(object):
             print(input_im.shape, 'input images shape')
             print(output_im.shape, 'output images shape')
 
-            # input_im = self.deprocess(input_im, mn, std)
-            # output_im = self.deprocess(output_im, mn, std)
+            input_im = self.deprocess(input_im, mn, std)
+            output_im = self.deprocess(output_im, mn, std)
 
             self.autovis(mini, input_im, output_im)
             self.simrank(mini, lat_vec, label, input_im)
@@ -264,7 +264,10 @@ class Autoencoder(object):
         process_imgs = []
         
         for image in ims:
-            image = ((image - self.opt.slide) / self.opt.scale)*stdev + mean
+
+            ordi = np.amax(image) - np.amin(image)
+            image = (((image - np.amin(image))*255)/ordi)
+            #image = ((image - self.opt.slide) / self.opt.scale)*stdev + mean
             process_imgs.append(image)
 
         return np.concatenate(process_imgs)
@@ -300,14 +303,18 @@ class Autoencoder(object):
 
         print(latvecs[0].shape, 'latent vector shape')
         print(labels[0].shape, 'label shape')
+
         dim, k = 5,5
         fig = plt.figure()
+
         for i in range(dim):
             knn = self.knn_search(latvecs[i], latvecs, k, inims)
             for j in range(k):
+
                 ax = fig.add_subplot(dim, k, i*5 + j + 1)
                 knn[j].astype(float)
                 ax.imshow(knn[j])
+
         if not os.path.exists(self.opt.figline + 'simrank/'):
             os.makedirs(self.opt.figline + 'simrank/')
 
