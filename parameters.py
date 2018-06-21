@@ -41,7 +41,7 @@ class Experiment(object):
         self.slide = 0
 
         self.extense_summary = True
-        self.restart = False
+        self.restart = True
 
         self.pipeline = self.precursor + self.log_dir_base + self.category + self.name
         self.figline = self.precursor + self.fig_dir_base + self.category + self.name + '/'

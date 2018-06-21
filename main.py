@@ -22,15 +22,16 @@ def main():
     print(opt)
 
     #TRAIN
+    tf.reset_default_graph()
     if opt.mode == "train" or opt.mode == 'both':
         train_model = model.Autoencoder(opt)
         with tf.Session() as sess:
-            train_model.tester(sess)
+            train_model.train(sess)
 
     #TEST
+    tf.reset_default_graph()
     if opt.mode == "test" or opt.mode == 'both':
         test_model = model.Autoencoder(opt)
-        print('everything ok')
         with tf.Session() as sess:
             print('still ok')
             test_model.tester(sess)
