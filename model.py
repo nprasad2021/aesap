@@ -257,7 +257,7 @@ class Autoencoder(object):
 
 
     def deprocess(self, images, mean, stdev):
-        ims = np.split(images, axis=0)
+        ims = np.split(images, self.opt.batch_size)
         process_imgs = []
         
         for image in ims:
