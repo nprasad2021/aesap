@@ -294,8 +294,8 @@ class Autoencoder(object):
         plt.close()
 
     def simrank(self, id_num, lat_batch, lab_batch):
-        latvecs = np.split(lat_batch, self.opt.batch_size)
-        labels = np.split(lab_batch, self.opt.batch_size)
+        latvecs = np.squeeze(np.split(lat_batch, self.opt.batch_size))
+        labels = np.squeeze(np.split(lab_batch, self.opt.batch_size))
 
         fig = plt.figure()
         for i in range(5):
