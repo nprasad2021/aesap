@@ -296,7 +296,8 @@ class Autoencoder(object):
     def simrank(self, id_num, lat_batch, lab_batch):
         latvecs = np.squeeze(np.split(lat_batch, self.opt.batch_size))
         labels = np.squeeze(np.split(lab_batch, self.opt.batch_size))
-
+        print(latvecs[0].shape, 'latent vector shape')
+        print(labels[0].shape, 'label shape')
         fig = plt.figure()
         for i in range(5):
             knn = self.knn_search(latvecs[i], latvecs, 5)
