@@ -24,6 +24,7 @@ class Autoencoder(object):
     Autoencoder model class
     """
     def __init__(self, opt):
+
         self.opt = opt
         self.dataset = load_data.Dataset(opt)
 
@@ -297,7 +298,7 @@ class Autoencoder(object):
         print(stdev.shape, 'stdev shape')
 
         ims = np.split(images, self.opt.batch_size)
-        stdev = max(stdev, 1.0/sqrt(image.size))
+        stdev = max(stdev, 1.0/np.sqrt(image.size))
         stdev = np.split(stdev, self.opt.batch_size)
         mean = np.split(mean, self.opt.batch_size)
 
