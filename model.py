@@ -276,9 +276,11 @@ class Autoencoder(object):
             if numofpairs == 21:
                 break
             ax = fig.add_subplot(5,4,numofpairs)
+            original.astype(float)
             ax.imshow(original)
             numofpairs += 1
             ax = fig.add_subplot(5,4,numofpairs)
+            modified.astype(float)
             ax.imshow(modified)
             numofpairs += 1
         if not os.path.exists(self.opt.figline):
@@ -295,6 +297,7 @@ class Autoencoder(object):
             knn = self.knn_search(latvecs[i], latvecs, 5)
             for j in range(5):
                 ax = fig.add_subplot(5, 5, i*5 + j+1)
+                knn[j].astype(float)
                 ax.imshow(knn[j])
         if not os.path.exists(self.opt.figline):
             os.makedirs(self.opt.figline)
