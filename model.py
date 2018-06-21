@@ -79,6 +79,7 @@ class Autoencoder(object):
         Build One-shot autoencoder
         """
         # Encoders
+        self.input_images_2 = tf.image.convert_image_dtype(self.input_images_1, tf.float32, saturate=True)
         self.encoder_1 = self.conv2d(self.input_images_1, filters=16, name="conv2_1")
         self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
         self.encoder_3 = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
@@ -100,6 +101,7 @@ class Autoencoder(object):
         self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
         self.output_images = self.decoder_4
         tf.summary.image('output', self.output_images)
+        self.output_images_1 = tf.image.convert_image_dtype(self.output_images, tf.float32, saturate=True)
 
     def build_2(self):
         """
@@ -277,18 +279,18 @@ class Autoencoder(object):
         num_iter = len(self.dataset.val_addrs)//self.opt.batch_size
 
         feed_dict_val = {self.learning_rate:self.opt.learning_rate, self.handle:validation_handle}
-        output_feed = [self.latent, self.input_images_1, self.input_images, self.output_images, self.ans, self.mean, self.std]
+        output_feed = [self.latent, self.input_images_2, self.input_images, self.output_images_1, self.ans, self.mean, self.std]
         score = 0
 
         for mini in range(num_iter):
 
             lat_vec, input_im_1, input_im, output_im, label, mn, std = session.run(output_feed, feed_dict_val)
 
-            print(input_im.shape, 'input images shape')
-            print(output_im.shape, 'output images shape')
+            #print(input_im.shape, 'input images shape')
+            #print(output_im.shape, 'output images shape')
 
-            input_im = self.deprocess(input_im_1, mn, std, norm=True)
-            output_im = self.deprocess(output_im, mn, std, norm=True)
+            #input_im = self.deprocess(input_im_1, mn, std, norm=True)
+            #output_im = self.deprocess(output_im, mn, std, norm=True)
 
             self.autovis(mini, input_im, output_im)
             self.simrank(mini, lat_vec, label, input_im)
@@ -393,10 +395,8 @@ class Autoencoder(object):
             knn = Autoencoder.knn_search(vec, latvecs, -1, labels)
             for i, l in enumerate(knn):
                 if l == labels[ind]:
-                    score += i*len(labels)/label_map[l]
-                else:
-                    score += -1*i*len(labels)/(len(labels) - label_map[l])
-        return score/len(labels)
+                    score += i/label_map[l]
+        return score
 
 
     @staticmethod

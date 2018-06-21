@@ -1,6 +1,7 @@
 # aesap
 
 Image-based search implemented via autoencoder
+
 How to run: python main.py [pathtodir] [arraynum] 0
 
 # TODO:
@@ -12,3 +13,5 @@ Sparsity-based autoencoder - add loss to magnitude
 of latent vector
 
 Implement Euclidean vs. Cosine Distance Metrics
+
+Implement Early Stopping
