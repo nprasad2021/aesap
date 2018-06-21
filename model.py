@@ -270,8 +270,8 @@ class Autoencoder(object):
         return np.concatenate(process_imgs)
 
     def autovis(self, id_num, inputim, outputim):
-        inims = np.split(inputim, self.opt.batch_size)
-        outims = np.split(outputim, self.opt.batch_size)
+        inims = np.squeeze(np.split(inputim, self.opt.batch_size))
+        outims = np.squeeze(np.split(outputim, self.opt.batch_size))
 
         print(inims[0].shape, 'input images shape')
         print(outims[0].shape, 'output images shape')
