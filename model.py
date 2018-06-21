@@ -322,6 +322,7 @@ class Autoencoder(object):
                 image = ((image - self.opt.slide) / self.opt.scale)*std + mn
             if np.amin(image) < 0: image = image + 127
             image = 255*image/np.amax(image)
+            image.astype(int)
             process_imgs.append(image)
 
         return np.concatenate(process_imgs)
@@ -339,11 +340,9 @@ class Autoencoder(object):
             if numofpairs == 21:
                 break
             ax = fig.add_subplot(5,4,numofpairs)
-            original.astype(float)
             ax.imshow(original)
             numofpairs += 1
             ax = fig.add_subplot(5,4,numofpairs)
-            modified.astype(float)
             ax.imshow(modified)
             numofpairs += 1
         if not os.path.exists(self.opt.figline + 'autovis/'):
@@ -367,7 +366,6 @@ class Autoencoder(object):
             for j in range(k):
 
                 ax = fig.add_subplot(dim, k, i*5 + j + 1)
-                knn[j].astype(float)
                 ax.imshow(knn[j])
 
         if not os.path.exists(self.opt.figline + 'simrank/'):
@@ -392,7 +390,7 @@ class Autoencoder(object):
 
         score = 0
         for ind, vec in enumerate(latvecs):
-            knn = self.knn_search(vec, latvecs, -1, labels)
+            knn = Autoencoder.knn_search(vec, latvecs, -1, labels)
             for i, l in enumerate(knn):
                 if l == labels[ind]:
                     score += i*len(labels)/label_map[l]
