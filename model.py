@@ -266,9 +266,8 @@ class Autoencoder(object):
         for image in ims:
             image = ((image - self.opt.slide) / self.opt.scale)*stdev + mean
             process_imgs.append(image)
-        tmp = np.stack(process_imgs)
-        print(type(tmp), 'tmp')
-        return tmp
+
+        return np.concatenate(process_imgs)
 
     def autovis(self, id_num, inputim, outputim):
         inims = np.split(inputim, self.opt.batch_size)
@@ -295,8 +294,8 @@ class Autoencoder(object):
         plt.close()
 
     def simrank(self, id_num, lat_batch, lab_batch):
-        latvecs = tf.unstack(lat_batch, num=self.opt.batch_size, axis=0)
-        labels = tf.unstack(lab_batch, num=self.opt.batch_size, axis=0)
+        latvecs = np.split(lat_batch, self.opt.batch_size)
+        labels = np.split(lab_batch, self.opt.batch_size)
 
         fig = plt.figure()
         for i in range(5):
