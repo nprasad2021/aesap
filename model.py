@@ -237,7 +237,7 @@ class Autoencoder(object):
         else:
             print("RESTORE")
             self.bestmodel_saver.restore(sess, tf.train.latest_checkpoint(self.opt.pipeline + '/models/bestmodel'))
-
+        sys.stdout.flush()
         training_handle = session.run(self.train_iterator.string_handle())
         validation_handle = session.run(self.val_iterator.string_handle())
         num_iter = len(self.dataset.val_addrs)//self.opt.batch_size

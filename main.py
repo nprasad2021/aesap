@@ -25,7 +25,7 @@ def main():
     if opt.mode == "train" or opt.mode == 'both':
         train_model = model.Autoencoder(opt)
         with tf.Session() as sess:
-            train_model.train(sess)
+            train_model.tester(sess)
 
     #TEST
     if opt.mode == "test" or opt.mode == 'both':
