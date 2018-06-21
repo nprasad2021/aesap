@@ -257,14 +257,14 @@ class Autoencoder(object):
 
 
     def deprocess(self, images, mean, stdev):
-        ims = tf.unstack(images, num=self.opt.batch_size, axis=0)
+        ims = np.split(images, axis=0)
         process_imgs = []
         
         for image in ims:
             image = ((image - self.opt.slide) / self.opt.scale)*stdev + mean
             process_imgs.append(image)
 
-        return tf.stack(process_imgs)
+        return np.stack(process_imgs)
 
     def autovis(self, id_num, inputim, outputim):
         inims = tf.unstack(inputim, num=self.opt.batch_size, axis=0)
