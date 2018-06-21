@@ -209,7 +209,7 @@ class Autoencoder(object):
             sys.stdout.flush()
         session.run([self.inc_global_step])
         # save after finishing training epoch    
-        self.bestmodel_saver.save(session, self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/bestmodel')
+        self.bestmodel_saver.save(session, self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/bestmodel/')
         train_writer.close()
         val_writer.close()
         print(':)')
@@ -231,12 +231,12 @@ class Autoencoder(object):
 
     def tester(self, session):
         print('enter test')
-        if not os.path.isfile(self.opt.pipeline + '/models/bestmodel/checkpoint'):
+        if not os.path.isfile(self.opt.pipeline + '/models/checkpoint'):
             print("MODEL NOT TRAINED. RETRAIN IMMEDIATELY")
             return
         else:
             print("RESTORE")
-            self.bestmodel_saver.restore(sess, tf.train.latest_checkpoint(self.opt.pipeline + '/models/bestmodel'))
+            self.bestmodel_saver.restore(sess, tf.train.latest_checkpoint(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/checkpoint'))
         sys.stdout.flush()
         training_handle = session.run(self.train_iterator.string_handle())
         validation_handle = session.run(self.val_iterator.string_handle())
