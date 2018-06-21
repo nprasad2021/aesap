@@ -33,9 +33,7 @@ def main():
     if opt.mode == "test" or opt.mode == 'both':
         test_model = model.Autoencoder(opt)
         with tf.Session() as sess:
-            print('still ok')
             test_model.tester(sess)
-            print('noooo')
 
 
 if __name__ == "__main__":

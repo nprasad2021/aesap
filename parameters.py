@@ -27,6 +27,7 @@ class Experiment(object):
         self.learning_rate = .0005
         self.decaying_rate = 1.0
         self.loss = 'l2'
+        self.build = 1
 
         self.mode = 'both'
         self.train_dir = self.precursor + 'data/' + self.tdata +  '/train/' # Training Directory
@@ -47,14 +48,17 @@ class Experiment(object):
         self.figline = self.precursor + self.fig_dir_base + self.category + self.name + '/'
 
     def __str__(self):
-        a = 'Model Parameters: \n'
+        a = '--------Model Parameters----- \n'
         a += 'Name: ' + str(self.name) + '\n'
         a += 'Image Size: ' + stxsr(self.image_size) + '\n'
         a += 'Batch Size: ' + str(self.batch_size) + '\n' 
+        a += 'Dataset: ' + self.tdata + '\n'
+        a += 'Net: ' + str(self.build) + '\n'
         a += 'Loss: ' + self.loss + '\n' 
         a += 'Epochs: ' + str(self.num_epochs) + '\n'
         a += 'Scale: ' + str(self.scale) + '\n' 
         a += 'Slide: ' + str(self.slide) + '\n' 
+        a += 'Build: ' + str(self.build) + '\n'
         a += 'Pipeline: ' + self.pipeline + '\n' 
         a += '-----------------------------------'
         return a

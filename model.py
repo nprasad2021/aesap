@@ -2,7 +2,7 @@
 # End-to-end one-shot autoencoder model
 # Supports tensorboard, generates image data efficiently via 
 # TFRecords. Saves best model w/ metadata
-# Tests and generates
+# Tests and generates plots for visual similarity comparison
 
 import os
 import time
@@ -41,6 +41,8 @@ class Autoencoder(object):
 
         with tf.variable_scope("one_shot_ae", initializer=tf.contrib.layers.variance_scaling_initializer(factor=1.0, uniform=True)):
             self.add_placeholders()
+            if self.opt.build == 1: self.build_1()
+            elif self.opt.build == 2: self.build_2()
             self.build()
             self.add_loss()
 
@@ -72,7 +74,7 @@ class Autoencoder(object):
         tf.summary.image('input', self.input_images_1)
         self.learning_rate = tf.placeholder(tf.float32, shape=())
 
-    def build(self):
+    def build_1(self):
         """
         Build One-shot autoencoder
         """
@@ -99,6 +101,30 @@ class Autoencoder(object):
         self.output_images = self.decoder_4
         tf.summary.image('output', self.output_images)
 
+    def build_2(self):
+        """
+        Build One-shot autoencoder
+        """
+        # Encoders
+        self.encoder_1 = self.conv2d(self.input_images_1, filters=16, name="conv2_1")
+        self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
+        self.encoder_3 = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
+
+        shape = self.encoder_4.get_shape().as_list()
+
+        dim = 1
+        for d in shape[1:]:
+            dim *= d
+        
+        # flatten
+        self.latent = tf.reshape(self.encoder_4, [-1, dim], name="feature")
+
+        self.decoder_2 = self.conv2d_transpose(self.decoder_1, filters=32, name="conv2d_trans_2")
+        self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
+        self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
+        self.output_images = self.decoder_4
+        tf.summary.image('output', self.output_images)
+
     def conv2d(self, bottom, filters, kernel_size=[5,5], stride=2, padding="SAME", name="conv2d"):
         layer = tf.layers.conv2d(bottom, filters, kernel_size, stride, padding)
         layer = tf.layers.batch_normalization(layer)
@@ -116,7 +142,7 @@ class Autoencoder(object):
         Defining a loss term (l2 loss)
         """
         with tf.variable_scope("loss"):
-            diff = self.input_images - self.output_images
+            diff = self.input_images_1 - self.output_images
             if self.opt.loss == 'l2':
                 self.loss = tf.divide(tf.nn.l2_loss(diff), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
             else: self.loss = tf.divide(tf.reduce_sum(tf.abs(diff)), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
@@ -219,15 +245,23 @@ class Autoencoder(object):
         ims = tf.unstack(self.input_images, num=self.opt.batch_size, axis=0)
         process_imgs = []
         image_size = self.opt.image_size
+        stds = []
+        means = []
 
         for image in ims:
             image = tf.random_crop(image, [image_size, image_size, 3])
-            self.std = tf.keras.backend.std(image)
-            self.mean = tf.reduce_mean(image)
+            std = tf.keras.backend.std(image)
+            mean = tf.reduce_mean(image)
             image = tf.image.per_image_standardization(image)*self.opt.scale + self.opt.slide
+
             process_imgs.append(image)
+            stds.append(std)
+            means.append(mean)
+
 
         self.input_images_1 = tf.stack(process_imgs)
+        self.std = tf.stack(stds)
+        self.mean = tf.stack(means)
 
     def tester(self, session):
         print('enter test')
@@ -243,31 +277,40 @@ class Autoencoder(object):
         num_iter = len(self.dataset.val_addrs)//self.opt.batch_size
 
         feed_dict_val = {self.learning_rate:self.opt.learning_rate, self.handle:validation_handle}
-        output_feed = [self.latent, self.input_images, self.output_images, self.ans, self.mean, self.std]
+        output_feed = [self.latent, self.input_images_1, self.input_images, self.output_images, self.ans, self.mean, self.std]
 
         for mini in range(num_iter):
 
-            lat_vec, input_im, output_im, label, mn, std = session.run(output_feed, feed_dict_val)
+            lat_vec, input_im_1, input_im, output_im, label, mn, std = session.run(output_feed, feed_dict_val)
+
             print(input_im.shape, 'input images shape')
             print(output_im.shape, 'output images shape')
 
-            input_im = self.deprocess(input_im, mn, std)
-            output_im = self.deprocess(output_im, mn, std)
+            input_im = self.deprocess(input_im_1, mn, std, True)
+            output_im = self.deprocess(output_im, mn, std, True)
 
             self.autovis(mini, input_im, output_im)
             self.simrank(mini, lat_vec, label, input_im)
 
 
-    def deprocess(self, images, mean, stdev):
-        ims = np.split(images, self.opt.batch_size)
-        print(ims[0].shape, 'images shape')
-        process_imgs = []
-        
-        for image in ims:
+    def deprocess(self, images, mean, stdev, norm):
+        print(mean.shape, 'mean shape')
+        print(stdev.shape, 'stdev shape')
 
-            ordi = np.amax(image) - np.amin(image)
-            image = (((image - np.amin(image))*255)/ordi)
-            #image = ((image - self.opt.slide) / self.opt.scale)*stdev + mean
+        ims = np.split(images, self.opt.batch_size)
+        stdev = max(stdev, 1.0/sqrt(image.size))
+        stdev = np.split(stdev, self.opt.batch_size)
+        mean = np.split(mean, self.opt.batch_size)
+
+        print(ims[0].shape, 'images shape in deprocess')
+
+        process_imgs = []
+
+        for image, mn, std in zip(ims, mean, stdev):
+            if norm:
+                image = ((image - self.opt.slide) / self.opt.scale)*std + mn
+            if np.amin(image) < 0: image = image + 127
+            image = 255*image/np.amax(image)
             process_imgs.append(image)
 
         return np.concatenate(process_imgs)
@@ -278,6 +321,7 @@ class Autoencoder(object):
 
         print(inims[0].shape, 'input images shape')
         print(outims[0].shape, 'output images shape')
+
         fig = plt.figure()
         numofpairs = 1
         for original, modified in zip(inims, outims):

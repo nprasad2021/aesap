@@ -10,6 +10,7 @@ scale = [1,32,64,128]
 slide = [0, 64, -64]
 loss = ['l2', 'l1']
 bs = [32, 64, 128]
+build = [2,1]
 
 
 def gen_tune_exp(precursor):
@@ -28,18 +29,21 @@ def gen_tune_exp(precursor):
 					for lr in lrs:
 						for imsize in img_sizes:
 							for l in loss:
+								for bill in build:
 
-								name = 'tune_' + str(lr) + '_' + dst + '_' + str(imsize) + '_sc' + str(sc) + '_sl' + str(sl) 
-								opt += [parameters.Experiment(identity=idx, name=name, precursor=precursor, datatype=dst)]
-								opt[-1].image_size = imsize
-								opt[-1].learning_rate = lr
-								opt[-1].outfile = 'finalresults.txt'
-								opt[-1].scale = sc
-								opt[-1].slide = sl
-								opt[-1].loss = l
-								opt[-1].batch_size = b
+									name = 'tune_lr' #+ str(lr) + '_' + dst + '_' + str(imsize) + '_sc' + str(sc) + '_sl' + str(sl) + '_bui' + str(bill) + '_l' + str(l) + '_bs' + str(b)
+									opt += [parameters.Experiment(identity=idx, name=name, precursor=precursor, datatype=dst)]
+									opt[-1].image_size = imsize
+									opt[-1].learning_rate = lr
+									opt[-1].outfile = 'finalresults.txt'
+									opt[-1].scale = sc
+									opt[-1].slide = sl
+									opt[-1].loss = l
+									opt[-1].batch_size = b
+									opt[-1].build = bill
+									opt[-1].restart = True
 
-								idx += 1
+									idx += 1
 
 	print('tune experiments num:', len(opt))
 	return opt
