@@ -251,8 +251,8 @@ class Autoencoder(object):
             print(input_im.shape, 'input images shape')
             print(output_im.shape, 'output images shape')
 
-            input_im = self.deprocess(input_im, mn, std)
-            output_im = self.deprocess(output_im, mn, std)
+            # input_im = self.deprocess(input_im, mn, std)
+            # output_im = self.deprocess(output_im, mn, std)
 
             self.autovis(mini, input_im, output_im)
             self.simrank(mini, lat_vec, label, input_im)
@@ -310,6 +310,7 @@ class Autoencoder(object):
                 ax.imshow(knn[j])
         if not os.path.exists(self.opt.figline + 'simrank/'):
             os.makedirs(self.opt.figline + 'simrank/')
+
         plt.savefig(self.opt.figline + 'simrank/' + str(id_num) + '.pdf', dpi=1000)
         plt.close()
 
