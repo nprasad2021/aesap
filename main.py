@@ -1,4 +1,7 @@
 # Neeraj Prasad
+# Experiment Specification
+# Run train and/or test
+
 import os
 import time
 import sys

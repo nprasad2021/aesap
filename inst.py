@@ -42,6 +42,7 @@ def gen_tune_exp(precursor):
 									opt[-1].batch_size = b
 									opt[-1].build = bill
 									opt[-1].restart = True
+									opt[-1].mode = 'test'
 
 									idx += 1
 

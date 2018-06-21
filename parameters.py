@@ -14,6 +14,7 @@ class Experiment(object):
         ### Directory Details
         self.log_dir_base = "log/"
         self.fig_dir_base = 'fig/'
+        self.results = 'evaluation.txt'
         self.precursor = precursor # Path to root
         self.tfr_out = self.precursor + 'data/' + self.tdata + '/records/' # TFRecords Output Path
 
@@ -46,6 +47,7 @@ class Experiment(object):
 
         self.pipeline = self.precursor + self.log_dir_base + self.category + self.name
         self.figline = self.precursor + self.fig_dir_base + self.category + self.name + '/'
+        self.resultline = self.precursor + self.results
 
     def __str__(self):
         a = '--------Model Parameters----- \n'
@@ -54,6 +56,7 @@ class Experiment(object):
         a += 'Batch Size: ' + str(self.batch_size) + '\n' 
         a += 'Dataset: ' + self.tdata + '\n'
         a += 'Net: ' + str(self.build) + '\n'
+        a += 'LR: ' + str(self.learning_rate) + '\n'
         a += 'Loss: ' + self.loss + '\n' 
         a += 'Epochs: ' + str(self.num_epochs) + '\n'
         a += 'Scale: ' + str(self.scale) + '\n' 

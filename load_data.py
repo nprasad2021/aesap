@@ -122,6 +122,7 @@ class Dataset:
 	    tfrecords_path = self.opt.tfr_out
 
 	    filenames = [tfrecords_path + set_name + '.tfrecords']
+	    
 	    dataset = tf.data.TFRecordDataset(filenames)
 	    dataset = dataset.map(_parse_function)
 	    if repeat:

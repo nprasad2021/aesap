@@ -264,7 +264,7 @@ class Autoencoder(object):
         self.mean = tf.stack(means)
 
     def tester(self, session):
-        print('enter test')
+        print('enter testing')
         if not os.path.isfile(self.opt.pipeline + '/models/checkpoint'):
             print("MODEL NOT TRAINED. RETRAIN IMMEDIATELY")
             return
@@ -278,6 +278,7 @@ class Autoencoder(object):
 
         feed_dict_val = {self.learning_rate:self.opt.learning_rate, self.handle:validation_handle}
         output_feed = [self.latent, self.input_images_1, self.input_images, self.output_images, self.ans, self.mean, self.std]
+        score = 0
 
         for mini in range(num_iter):
 
@@ -286,11 +287,21 @@ class Autoencoder(object):
             print(input_im.shape, 'input images shape')
             print(output_im.shape, 'output images shape')
 
-            input_im = self.deprocess(input_im_1, mn, std, True)
-            output_im = self.deprocess(output_im, mn, std, True)
+            input_im = self.deprocess(input_im_1, mn, std, norm=True)
+            output_im = self.deprocess(output_im, mn, std, norm=True)
 
             self.autovis(mini, input_im, output_im)
             self.simrank(mini, lat_vec, label, input_im)
+            score += self.evaluation_score(lat_vec, label, self.opt.batch_size)
+
+        score = score / num_iter
+        if not os.path.isfile(self.opt.resultline):
+            open(self.opt.resultline, 'a').close()
+        with open(self.opt.resultline, 'a+') as f:
+            f.write(str(self.opt.ID) + ',' + str(score))
+            f.write('\n')
+        print('Final Score: ', score)
+        print('Successfully completed testing :)')
 
 
     def deprocess(self, images, mean, stdev, norm):
@@ -298,7 +309,7 @@ class Autoencoder(object):
         print(stdev.shape, 'stdev shape')
 
         ims = np.split(images, self.opt.batch_size)
-        stdev = max(stdev, 1.0/np.sqrt(image.size))
+        stdev = max(stdev, 1.0/np.sqrt(ims[0].size))
         stdev = np.split(stdev, self.opt.batch_size)
         mean = np.split(mean, self.opt.batch_size)
 
@@ -367,7 +378,36 @@ class Autoencoder(object):
 
 
     @staticmethod
+    def evaluation_score(lat_batch, lab_batch, batch_size):
+        # Metric to evaluate different networks
+        latvecs = np.squeeze(np.split(lat_batch, batch_size))
+        labels = np.squeeze(np.split(lab_batch, batch_size))
+
+        label_map = {}
+
+        for l in labels:
+            if l in label_map:
+                label_map[l] += 1
+            else: label_map[l] = 1
+
+        score = 0
+        for ind, vec in enumerate(latvecs):
+            knn = self.knn_search(vec, latvecs, -1, labels)
+            for i, l in enumerate(knn):
+                if l == labels[ind]:
+                    score += i*len(labels)/label_map[l]
+                else:
+                    score += -1*i*len(labels)/(len(labels) - label_map[l])
+        return score/len(labels)
+
+
+    @staticmethod
     def knn_search(x, D, K, ims):
+        '''
+        KNN search algorithm.
+        Sort images in order by most similar
+        according to Manhattan distance
+        '''
         new_array = []
         final = []
         for item in D:
