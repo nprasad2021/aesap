@@ -1,4 +1,4 @@
-# Neeraj Prasad, SAP LLC 2018
+# Neeraj Prasad
 # Encode JPEG image data into TFRecords w/ labels
 # Create dataset object automatically load,
 # process, and return batches of images from TFRecords
