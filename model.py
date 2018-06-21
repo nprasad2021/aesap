@@ -108,6 +108,7 @@ class Autoencoder(object):
         Build One-shot autoencoder
         """
         # Encoders
+        self.input_images_2 = tf.image.convert_image_dtype(self.input_images_1, tf.float32, saturate=True)
         self.encoder_1 = self.conv2d(self.input_images_1, filters=16, name="conv2_1")
         self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
         self.encoder_3 = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
@@ -126,6 +127,7 @@ class Autoencoder(object):
         self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
         self.output_images = self.decoder_4
         tf.summary.image('output', self.output_images)
+        self.output_images_1 = tf.image.convert_image_dtype(self.output_images, tf.float32, saturate=True)
 
     def conv2d(self, bottom, filters, kernel_size=[5,5], stride=2, padding="SAME", name="conv2d"):
         layer = tf.layers.conv2d(bottom, filters, kernel_size, stride, padding)
