@@ -28,7 +28,7 @@ class Experiment(object):
         self.decaying_rate = 1.0
         self.loss = 'l2'
 
-        self.mode = 'test'
+        self.mode = 'both'
         self.train_dir = self.precursor + 'data/' + self.tdata +  '/train/' # Training Directory
         self.val_dir = self.precursor + 'data/' + self.tdata + '/val/' # Validation Directory
         self.outfile = 'finalresults.txt'
@@ -49,7 +49,7 @@ class Experiment(object):
     def __str__(self):
         a = 'Model Parameters: \n'
         a += 'Name: ' + str(self.name) + '\n'
-        a += 'Image Size: ' + str(self.image_size) + '\n'
+        a += 'Image Size: ' + stxsr(self.image_size) + '\n'
         a += 'Batch Size: ' + str(self.batch_size) + '\n' 
         a += 'Loss: ' + self.loss + '\n' 
         a += 'Epochs: ' + str(self.num_epochs) + '\n'
