@@ -288,7 +288,7 @@ class Autoencoder(object):
             modified.astype(float)
             ax.imshow(modified)
             numofpairs += 1
-        if not os.path.exists(self.opt.figline):
+        if not os.path.exists(self.opt.figline + 'autovis/'):
             os.makedirs(self.opt.figline)
         plt.savefig(self.opt.figline + 'autovis/' + str(id_num) + '.pdf', dpi=1000)
         plt.close()
@@ -304,8 +304,8 @@ class Autoencoder(object):
                 ax = fig.add_subplot(5, 5, i*5 + j+1)
                 knn[j].astype(float)
                 ax.imshow(knn[j])
-        if not os.path.exists(self.opt.figline):
-            os.makedirs(self.opt.figline)
+        if not os.path.exists(self.opt.figline + 'simrank/'):
+            os.makedirs(self.opt.figline + 'simrank/')
         plt.savefig(self.opt.figline + 'simrank/' + str(id_num) + '.pdf', dpi=1000)
         plt.close()
 
