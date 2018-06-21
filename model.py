@@ -289,7 +289,7 @@ class Autoencoder(object):
             ax.imshow(modified)
             numofpairs += 1
         if not os.path.exists(self.opt.figline + 'autovis/'):
-            os.makedirs(self.opt.figline)
+            os.makedirs(self.opt.figline + 'autovis/')
         plt.savefig(self.opt.figline + 'autovis/' + str(id_num) + '.pdf', dpi=1000)
         plt.close()
 
