@@ -13,6 +13,7 @@ class Experiment(object):
 
         ### Directory Details
         self.log_dir_base = "log/"
+        self.fig_dir_base = 'fig/'
         self.precursor = precursor # Path to root
         self.tfr_out = self.precursor + 'data/' + self.tdata + '/records/' # TFRecords Output Path
 
@@ -27,7 +28,7 @@ class Experiment(object):
         self.decaying_rate = 1.0
         self.loss = 'l2'
 
-        self.mode = 'train'
+        self.mode = 'both'
         self.train_dir = self.precursor + 'data/' + self.tdata +  '/train/' # Training Directory
         self.val_dir = self.precursor + 'data/' + self.tdata + '/val/' # Validation Directory
         self.outfile = 'finalresults.txt'
@@ -40,6 +41,23 @@ class Experiment(object):
         self.slide = 0
 
         self.extense_summary = True
-        self.restart = True
+        self.restart = False
+
+        self.pipeline = self.precursor + self.log_dir_base + self.category + self.name
+        self.figline = self.precursor + self.fig_dir_base + self.category + self.name + '/'
+
+    def __str__(self):
+        a = 'Model Parameters: \n'
+        a += 'Name: ' + str(self.name) + '\n'
+        a += 'Image Size: ' + str(self.image_size) + '\n'
+        a += 'Batch Size: ' + str(self.batch_size) + '\n' 
+        a += 'Loss: ' + self.loss + '\n' 
+        a += 'Epochs: ' + str(self.num_epochs) + '\n'
+        a += 'Scale: ' + str(self.scale) + '\n' 
+        a += 'Slide: ' + str(self.slide) + '\n' 
+        a += 'Pipeline: ' + self.pipeline + '\n' 
+        a += '-----------------------------------'
+        return a
+
 
 

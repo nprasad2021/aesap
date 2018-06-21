@@ -1,4 +1,4 @@
-# Copyright 2018 SAP LLC
+# Neeraj Prasad
 import os
 import time
 import sys
@@ -17,16 +17,21 @@ def main():
     ID = int(sys.argv[2])
     factor = int(sys.argv[3])
 
-    ID = ID + factor*1000
-    
+    ID += factor*1000
     opt = inst.gen_tune_exp(precursor)[ID]
-    # start training from scratch
-    if opt.mode == "train":
-        new_model = model.Autoencoder(opt)
+    print(opt)
+
+    new_model = model.Autoencoder(opt)
+
+    #TRAIN
+    if opt.mode == "train" or opt.mode == 'both':
         with tf.Session() as sess:
             new_model.train(sess)
-    elif opt.mode == "find_similar":
-        search(opt)
+
+    #TEST
+    if opt.mode == "test" or opt.mode == 'both':
+        with tf.Session() as sess:
+            new_model.test(sess)
     
 if __name__ == "__main__":
     start_time = time.time()

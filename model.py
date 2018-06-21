@@ -1,7 +1,8 @@
-# Neeraj Prasad, based on Hyun Kim
+# Neeraj Prasad (neural net based on Hyun siamese autoencoder)
 # End-to-end one-shot autoencoder model
 # Supports tensorboard, generates image data efficiently via 
 # TFRecords. Saves best model w/ metadata
+# Tests and generates
 
 import os
 import time
@@ -12,6 +13,10 @@ import sys
 import numpy as np
 import tensorflow as tf
 import load_data
+
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 
 
 class Autoencoder(object):
@@ -42,7 +47,7 @@ class Autoencoder(object):
         params = tf.trainable_variables()
         gradients = tf.gradients(self.loss, params)
 
-        self.global_step = tf.Variable(0, name="global_step", trainable=False)
+        self.global_step = tf.Variable(0, name="global_step",  trainable=False)
         self.inc_global_step = tf.assign_add(self.global_step, 1, name='increment')
 
         grads = list(zip(gradients, params))
@@ -61,8 +66,10 @@ class Autoencoder(object):
         Adding placeholder
         """
         self.input_images, self.ans = self.iterator.get_next()
+        self.test = tf.placeholder(tf.bool, shape=())
+
         self.preprocess()
-        tf.summary.image('input', self.input_images)
+        tf.summary.image('input', self.input_images_1)
         self.learning_rate = tf.placeholder(tf.float32, shape=())
 
     def build(self):
@@ -70,7 +77,7 @@ class Autoencoder(object):
         Build One-shot autoencoder
         """
         # Encoders
-        self.encoder_1 = self.conv2d(self.input_images, filters=16, name="conv2_1")
+        self.encoder_1 = self.conv2d(self.input_images_1, filters=16, name="conv2_1")
         self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
         self.encoder_3 = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
         self.encoder_4 = self.conv2d(self.encoder_3, filters=128, name="conv2_4")
@@ -215,12 +222,96 @@ class Autoencoder(object):
 
         for image in ims:
             image = tf.random_crop(image, [image_size, image_size, 3])
+            self.std = tf.keras.backend.std(image)
+            self.mean = tf.reduce_mean(image)
             image = tf.image.per_image_standardization(image)*self.opt.scale + self.opt.slide
             process_imgs.append(image)
 
-        self.input_images = tf.stack(process_imgs)
+        self.input_images_1 = tf.stack(process_imgs)
+
+    def test(self, session):
+        if not os.path.isfile(self.opt.pipeline + '/models/bestmodel/checkpoint'):
+            print("MODEL NOT TRAINED. RETRAIN IMMEDIATELY")
+            return
+        else:
+            print("RESTORE")
+            self.bestmodel_saver.restore(sess, tf.train.latest_checkpoint(self.opt.pipeline + '/models/bestmodel'))
+
+        training_handle = session.run(self.train_iterator.string_handle())
+        validation_handle = session.run(self.val_iterator.string_handle())
+        num_iter = len(self.dataset.val_addrs)//self.opt.batch_size
+
+        feed_dict_val = {self.learning_rate:self.opt.learning_rate, self.handle:validation_handle}
+        output_feed = [self.latent, self.input_images, self.output_images, self.ans, self.mean, self.std]
+
+        for mini in range(num_iter):
+
+            lat_vec, input_im, output_im, label, mn, std = session.run(output_feed, feed_dict_val)
+
+            input_im = self.deprocess(input_im, mn, std)
+            output_im = self.deprocess(output_im, mn, std)
+
+            self.autovis(mini, input_im, output_im)
+            self.simrank(mini, lat_vec, label)
 
 
+    def deprocess(self, images, mean, stdev):
+        ims = tf.unstack(images, num=self.opt.batch_size, axis=0)
+        process_imgs = []
+        
+        for image in ims:
+            image = ((image - self.opt.slide) / self.opt.scale)*stdev + mean
+            process_imgs.append(image)
+
+        return tf.stack(process_imgs)
+
+    def autovis(self, id_num, inputim, outputim):
+        inims = tf.unstack(inputim, num=self.opt.batch_size, axis=0)
+        outims = tf.unstack(outputim, num=self.opt.batch_size, axis=0)
+
+        fig = plt.figure()
+        numofpairs = 0
+        for original, modified in zip(inims, outims):
+            if numofpairs == 20:
+                break
+            ax = fig.add_subplot(5,4,numofpairs)
+            ax.imshow(original)
+            numofpairs += 1
+            ax = fig.add_subplot(5,4,numofpairs)
+            ax.imshow(modified)
+            numofpairs += 1
+        if not os.path.exists(self.opt.figline):
+            os.makedirs(self.opt.figline)
+        plt.savefig(self.opt.figline + 'autovis/' + str(id_num) + '.pdf', dpi=1000)
+        plt.close()
+
+    def simrank(self, id_num, lat_batch, lab_batch):
+        latvecs = tf.unstack(lat_batch, num=self.opt.batch_size, axis=0)
+        labels = tf.unstack(lab_batch, num=self.opt.batch_size, axis=0)
+
+        fig = plt.figure()
+        fig
+        for i in range(5):
+            knn = knn_search(latvecs[i], latvecs, 5)
+            for j in range(5):
+                ax = fig.add_subplot(5, 5, i*5 + j)
+                ax.imshow(knn[j])
+        if not os.path.exists(self.opt.figline):
+            os.makedirs(self.opt.figline)
+        plt.savefig(self.opt.figline + 'simrank/' + str(id_num) + '.pdf', dpi=1000)
+        plt.close()
+
+
+    @staticmethod
+    def knn_search(x, D, K):
+        new_array = []
+        final = []
+        for item in D:
+            new_array.append(np.sum(np.square(np.subtract(x, item))))
+        ind_array = np.argsort(new_array)
+        for item in ind_array:
+            final.append(new_array[item])
+        return final[0:K]
 
 def gradient_summaries(grad, var, opt):
 

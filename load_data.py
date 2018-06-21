@@ -188,5 +188,6 @@ def _process_image(filename, coder):
 if __name__ == "__main__":
 
 	### Test: tfrecords files for desired dataset load
+	### write_TFRecords()
 	opt = parameters.Experiment()
 	aesap = Dataset(opt)
