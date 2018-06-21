@@ -109,16 +109,16 @@ class Autoencoder(object):
         self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
         self.encoder_3 = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
 
-        shape = self.encoder_4.get_shape().as_list()
+        shape = self.encoder_3.get_shape().as_list()
 
         dim = 1
         for d in shape[1:]:
             dim *= d
         
         # flatten
-        self.latent = tf.reshape(self.encoder_4, [-1, dim], name="feature")
+        self.latent = tf.reshape(self.encoder_3, [-1, dim], name="feature")
 
-        self.decoder_2 = self.conv2d_transpose(self.decoder_1, filters=32, name="conv2d_trans_2")
+        self.decoder_2 = self.conv2d_transpose(self.encoder_3, filters=32, name="conv2d_trans_2")
         self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
         self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
         self.output_images = self.decoder_4
