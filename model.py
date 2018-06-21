@@ -271,9 +271,9 @@ class Autoencoder(object):
         outims = tf.unstack(outputim, num=self.opt.batch_size, axis=0)
 
         fig = plt.figure()
-        numofpairs = 0
+        numofpairs = 1
         for original, modified in zip(inims, outims):
-            if numofpairs == 20:
+            if numofpairs == 21:
                 break
             ax = fig.add_subplot(5,4,numofpairs)
             ax.imshow(original)
@@ -291,11 +291,10 @@ class Autoencoder(object):
         labels = tf.unstack(lab_batch, num=self.opt.batch_size, axis=0)
 
         fig = plt.figure()
-        fig
         for i in range(5):
             knn = self.knn_search(latvecs[i], latvecs, 5)
             for j in range(5):
-                ax = fig.add_subplot(5, 5, i*5 + j)
+                ax = fig.add_subplot(5, 5, i*5 + j+1)
                 ax.imshow(knn[j])
         if not os.path.exists(self.opt.figline):
             os.makedirs(self.opt.figline)
