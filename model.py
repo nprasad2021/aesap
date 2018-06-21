@@ -255,7 +255,7 @@ class Autoencoder(object):
             output_im = self.deprocess(output_im, mn, std)
 
             self.autovis(mini, input_im, output_im)
-            self.simrank(mini, lat_vec, label)
+            self.simrank(mini, lat_vec, label, input_im)
 
 
     def deprocess(self, images, mean, stdev):
@@ -293,11 +293,14 @@ class Autoencoder(object):
         plt.savefig(self.opt.figline + 'autovis/' + str(id_num) + '.pdf', dpi=1000)
         plt.close()
 
-    def simrank(self, id_num, lat_batch, lab_batch):
+    def simrank(self, id_num, lat_batch, lab_batch, inputim):
         latvecs = np.squeeze(np.split(lat_batch, self.opt.batch_size))
         labels = np.squeeze(np.split(lab_batch, self.opt.batch_size))
+        inims = np.squeeze(np.split(inputim, self.opt.batch_size))
+
         print(latvecs[0].shape, 'latent vector shape')
         print(labels[0].shape, 'label shape')
+
         fig = plt.figure()
         for i in range(5):
             knn = self.knn_search(latvecs[i], latvecs, 5)
@@ -312,14 +315,14 @@ class Autoencoder(object):
 
 
     @staticmethod
-    def knn_search(x, D, K):
+    def knn_search(x, D, K, ims):
         new_array = []
         final = []
         for item in D:
             new_array.append(np.sum(np.square(np.subtract(x, item))))
         ind_array = np.argsort(new_array)
         for item in ind_array:
-            final.append(new_array[item])
+            final.append(ims[item])
         return final[0:K]
 
 def gradient_summaries(grad, var, opt):
