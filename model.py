@@ -300,12 +300,12 @@ class Autoencoder(object):
 
         print(latvecs[0].shape, 'latent vector shape')
         print(labels[0].shape, 'label shape')
-
+        dim, k = 5,5
         fig = plt.figure()
-        for i in range(5):
-            knn = self.knn_search(latvecs[i], latvecs, 5)
-            for j in range(5):
-                ax = fig.add_subplot(5, 5, i*5 + j+1)
+        for i in range(dim):
+            knn = self.knn_search(latvecs[i], latvecs, k, inims)
+            for j in range(k):
+                ax = fig.add_subplot(dim, k, i*5 + j + 1)
                 knn[j].astype(float)
                 ax.imshow(knn[j])
         if not os.path.exists(self.opt.figline + 'simrank/'):
