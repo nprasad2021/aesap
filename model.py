@@ -248,9 +248,8 @@ class Autoencoder(object):
         for mini in range(num_iter):
 
             lat_vec, input_im, output_im, label, mn, std = session.run(output_feed, feed_dict_val)
-
-            print(type(input_im))
-            print(type(output_im))
+            print(input_im.shape, 'input images shape')
+            print(output_im.shape, 'output images shape')
 
             input_im = self.deprocess(input_im, mn, std)
             output_im = self.deprocess(output_im, mn, std)
