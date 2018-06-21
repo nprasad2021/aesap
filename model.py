@@ -236,7 +236,7 @@ class Autoencoder(object):
             return
         else:
             print("RESTORE")
-            self.saver.restore(session, tf.train.latest_checkpoint(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/checkpoint'))
+            self.saver.restore(session, tf.train.latest_checkpoint(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/'))
         sys.stdout.flush()
         training_handle = session.run(self.train_iterator.string_handle())
         validation_handle = session.run(self.val_iterator.string_handle())
