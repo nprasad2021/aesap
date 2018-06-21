@@ -43,7 +43,6 @@ class Autoencoder(object):
             self.add_placeholders()
             if self.opt.build == 1: self.build_1()
             elif self.opt.build == 2: self.build_2()
-            self.build()
             self.add_loss()
 
         params = tf.trainable_variables()
