@@ -21,17 +21,17 @@ def main():
     opt = inst.gen_tune_exp(precursor)[ID]
     print(opt)
 
-    new_model = model.Autoencoder(opt)
-
     #TRAIN
     if opt.mode == "train" or opt.mode == 'both':
+        train_model = model.Autoencoder(opt)
         with tf.Session() as sess:
-            new_model.train(sess)
+            train_model.train(sess)
 
     #TEST
     if opt.mode == "test" or opt.mode == 'both':
+        test_model = model.Autoencoder(opt)
         with tf.Session() as sess:
-            new_model.test(sess)
+            test_model.test(sess)
     
 if __name__ == "__main__":
     start_time = time.time()
