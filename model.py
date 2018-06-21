@@ -248,7 +248,7 @@ class Autoencoder(object):
         for mini in range(num_iter):
 
             lat_vec, input_im, output_im, label, mn, std = session.run(output_feed, feed_dict_val)
-            
+
             print(type(input_im))
             print(type(output_im))
 
@@ -266,12 +266,13 @@ class Autoencoder(object):
         for image in ims:
             image = ((image - self.opt.slide) / self.opt.scale)*stdev + mean
             process_imgs.append(image)
-
-        return np.stack(process_imgs)
+        tmp = np.stack(process_imgs)
+        print(type(tmp), 'tmp')
+        return tmp
 
     def autovis(self, id_num, inputim, outputim):
-        inims = tf.unstack(inputim, num=self.opt.batch_size, axis=0)
-        outims = tf.unstack(outputim, num=self.opt.batch_size, axis=0)
+        inims = np.split(inputim, self.opt.batch_size)
+        outims = np.split(outputim, self.opt.batch_size)
 
         fig = plt.figure()
         numofpairs = 1
