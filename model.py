@@ -260,6 +260,7 @@ class Autoencoder(object):
 
     def deprocess(self, images, mean, stdev):
         ims = np.split(images, self.opt.batch_size)
+        print(ims[0].shape, 'images shape')
         process_imgs = []
         
         for image in ims:
@@ -273,6 +274,8 @@ class Autoencoder(object):
         inims = np.split(inputim, self.opt.batch_size)
         outims = np.split(outputim, self.opt.batch_size)
 
+        print(inims[0].shape, 'input images shape')
+        print(outims[0].shape, 'output images shape')
         fig = plt.figure()
         numofpairs = 1
         for original, modified in zip(inims, outims):
