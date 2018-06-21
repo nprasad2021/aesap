@@ -309,7 +309,6 @@ class Autoencoder(object):
         print(stdev.shape, 'stdev shape')
 
         ims = np.split(images, self.opt.batch_size)
-        stdev = max(stdev, 1.0/np.sqrt(ims[0].size))
         stdev = np.split(stdev, self.opt.batch_size)
         mean = np.split(mean, self.opt.batch_size)
 
@@ -319,6 +318,7 @@ class Autoencoder(object):
 
         for image, mn, std in zip(ims, mean, stdev):
             if norm:
+                std = max(std, 1.0/np.sqrt(image.size))
                 image = ((image - self.opt.slide) / self.opt.scale)*std + mn
             if np.amin(image) < 0: image = image + 127
             image = 255*image/np.amax(image)
