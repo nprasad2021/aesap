@@ -30,9 +30,13 @@ def main():
     #TEST
     if opt.mode == "test" or opt.mode == 'both':
         test_model = model.Autoencoder(opt)
+        print('everything ok')
         with tf.Session() as sess:
+            print('still ok')
             test_model.test(sess)
-    
+            print('noooo')
+
+
 if __name__ == "__main__":
     start_time = time.time()
     main()

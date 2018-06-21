@@ -230,6 +230,7 @@ class Autoencoder(object):
         self.input_images_1 = tf.stack(process_imgs)
 
     def test(self, session):
+        print('enter test')
         if not os.path.isfile(self.opt.pipeline + '/models/bestmodel/checkpoint'):
             print("MODEL NOT TRAINED. RETRAIN IMMEDIATELY")
             return
@@ -292,7 +293,7 @@ class Autoencoder(object):
         fig = plt.figure()
         fig
         for i in range(5):
-            knn = knn_search(latvecs[i], latvecs, 5)
+            knn = self.knn_search(latvecs[i], latvecs, 5)
             for j in range(5):
                 ax = fig.add_subplot(5, 5, i*5 + j)
                 ax.imshow(knn[j])
