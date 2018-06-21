@@ -33,7 +33,7 @@ def main():
         print('everything ok')
         with tf.Session() as sess:
             print('still ok')
-            test_model.test(sess)
+            test_model.tester(sess)
             print('noooo')
 
 

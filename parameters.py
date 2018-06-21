@@ -28,7 +28,7 @@ class Experiment(object):
         self.decaying_rate = 1.0
         self.loss = 'l2'
 
-        self.mode = 'test'
+        self.mode = 'both'
         self.train_dir = self.precursor + 'data/' + self.tdata +  '/train/' # Training Directory
         self.val_dir = self.precursor + 'data/' + self.tdata + '/val/' # Validation Directory
         self.outfile = 'finalresults.txt'

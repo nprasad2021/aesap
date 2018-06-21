@@ -229,7 +229,7 @@ class Autoencoder(object):
 
         self.input_images_1 = tf.stack(process_imgs)
 
-    def test(self, session):
+    def tester(self, session):
         print('enter test')
         if not os.path.isfile(self.opt.pipeline + '/models/bestmodel/checkpoint'):
             print("MODEL NOT TRAINED. RETRAIN IMMEDIATELY")
