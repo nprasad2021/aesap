@@ -50,7 +50,7 @@ class Experiment(object):
     def __str__(self):
         a = '--------Model Parameters----- \n'
         a += 'Name: ' + str(self.name) + '\n'
-        a += 'Image Size: ' + stxsr(self.image_size) + '\n'
+        a += 'Image Size: ' + str(self.image_size) + '\n'
         a += 'Batch Size: ' + str(self.batch_size) + '\n' 
         a += 'Dataset: ' + self.tdata + '\n'
         a += 'Net: ' + str(self.build) + '\n'
