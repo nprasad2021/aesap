@@ -161,13 +161,13 @@ class Autoencoder(object):
         self.z = self.z_mu + tf.sqrt(tf.exp(self.z_log_sigma_sq)) * eps
 
         if self.opt.vae:
-            self.encode_out = tf.reshape(tf.layers.dense(self.z, dim, activation='relu'), shape)
+            self.encode_out = tf.reshape(tf.layers.dense(self.z, dim, tf.nn.relu), shape)
         else:
             self.encode_out = self.encoder_final
 
-        self.class_1 = tf.layers.dense(self.latent, 200)
-        self.class_2 = tf.layers.dense(self.class_1, 50)
-        self.final_sm = tf.layers.dense(self.class_2, len(self.all_labels))
+        self.class_1 = tf.layers.dense(self.latent, 200, tf.nn.relu)
+        self.class_2 = tf.layers.dense(self.class_1, 50, tf.nn.relu)
+        self.final_sm = tf.layers.dense(self.class_2, len(self.dataset.all_labels))
 
     def add_loss(self):
         """
