@@ -89,7 +89,7 @@ class Autoencoder(object):
         self.vae()
 
         # Decoders
-        self.decoder_1 = self.conv2d_transpose(self.encoder_out, filters=64, name="conv2d_trans_1")
+        self.decoder_1 = self.conv2d_transpose(self.encode_out, filters=64, name="conv2d_trans_1")
         self.decoder_2 = self.conv2d_transpose(self.decoder_1, filters=32, name="conv2d_trans_2")
         self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
         self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
@@ -194,7 +194,7 @@ class Autoencoder(object):
             self.accuracy_loss = 0
             if self.opt.build == 3:
                 self.accuracy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.ans, logits=self.final_sm))
-                tf.summary.scalar('cross_entropy', cross_entropy)
+                tf.summary.scalar('cross_entropy', self.accuracy_loss)
 
             #----------TOTAL LOSS------------------
             self.loss = self.recon_loss + self.latent_loss + self.accuracy_loss
