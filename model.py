@@ -351,6 +351,7 @@ class Autoencoder(object):
             numofpairs += 1
         if not os.path.exists(self.opt.figline + 'autovis/'):
             os.makedirs(self.opt.figline + 'autovis/')
+        plt.axis('off')
         plt.savefig(self.opt.figline + 'autovis/' + str(id_num) + '.pdf', dpi=1000)
         plt.close()
 
@@ -374,7 +375,7 @@ class Autoencoder(object):
 
         if not os.path.exists(self.opt.figline + 'simrank/'):
             os.makedirs(self.opt.figline + 'simrank/')
-
+        plt.axis('off')
         plt.savefig(self.opt.figline + 'simrank/' + str(id_num) + '.pdf', dpi=1000)
         plt.close()
 
