@@ -65,7 +65,7 @@ class Experiment(object):
         a += 'Scale: ' + str(self.scale) + '\n' 
         a += 'Slide: ' + str(self.slide) + '\n' 
         a += 'Build: ' + str(self.build) + '\n'
-        a += 'Hidden Units: ' + str(self.num_units)
+        a += 'Hidden Units: ' + str(self.num_units) + '\n'
         a += 'Pipeline: ' + self.pipeline + '\n' 
         a += '-----------------------------------'
         return a

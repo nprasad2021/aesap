@@ -54,8 +54,8 @@ class Autoencoder(object):
         self.inc_global_step = tf.assign_add(self.global_step, 1, name='increment')
 
         grads = list(zip(gradients, params))
-        for g, v in grads:
-            gradient_summaries(g, v, opt)
+        #for g, v in grads:
+        #    gradient_summaries(g, v, opt)
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
         self.updates = optimizer.apply_gradients(zip(gradients, params), global_step=self.global_step)
@@ -246,7 +246,7 @@ class Autoencoder(object):
             print('val acc:', acc)
             sys.stdout.flush()
         else:
-            [_, summaries, global_step, loss] = session.run(output_feed_train, feed_dict_train)
+            [_, summaries, global_step, loss, acc] = session.run(output_feed_train, feed_dict_train)
 
         # Scheduling learning rate
         if int(global_step + 1) % self.opt.decay_every == 0:
