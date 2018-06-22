@@ -15,3 +15,7 @@ of latent vector
 Implement Euclidean vs. Cosine Distance Metrics
 
 Implement Early Stopping
+
+Implement variational autoencoder
+
+Implement a neural network on latent vector for classification

@@ -33,10 +33,10 @@ class Dataset:
 		addrs = []
 		labels = []
 
-		all_labels = os.listdir(path)
-		all_labels.sort()
+		self.all_labels = os.listdir(path)
+		self.all_labels.sort()
 
-		for ind, lbl in enumerate(all_labels):
+		for ind, lbl in enumerate(self.all_labels):
 
 			lbl_addrs = glob.glob(path + lbl + '/*.jpg')
 			labels += [ind]*len(lbl_addrs)
@@ -122,7 +122,7 @@ class Dataset:
 	    tfrecords_path = self.opt.tfr_out
 
 	    filenames = [tfrecords_path + set_name + '.tfrecords']
-	    
+
 	    dataset = tf.data.TFRecordDataset(filenames)
 	    dataset = dataset.map(_parse_function)
 	    if repeat:

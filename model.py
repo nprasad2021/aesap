@@ -44,6 +44,7 @@ class Autoencoder(object):
             self.add_placeholders()
             if self.opt.build == 1: self.build_1()
             elif self.opt.build == 2: self.build_2()
+            elif self.opt.build == 3: self.build_3()
             self.add_loss()
 
         params = tf.trainable_variables()
@@ -83,19 +84,12 @@ class Autoencoder(object):
         self.encoder_1 = self.conv2d(self.input_images_1, filters=16, name="conv2_1")
         self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
         self.encoder_3 = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
-        self.encoder_4 = self.conv2d(self.encoder_3, filters=128, name="conv2_4")
+        self.encoder_final = self.conv2d(self.encoder_3, filters=128, name="conv2_4")
 
-        shape = self.encoder_4.get_shape().as_list()
-
-        dim = 1
-        for d in shape[1:]:
-            dim *= d
-        
-        # flatten
-        self.latent = tf.reshape(self.encoder_4, [-1, dim], name="feature")
+        self.vae()
 
         # Decoders
-        self.decoder_1 = self.conv2d_transpose(self.encoder_4, filters=64, name="conv2d_trans_1")
+        self.decoder_1 = self.conv2d_transpose(self.encoder_out, filters=64, name="conv2d_trans_1")
         self.decoder_2 = self.conv2d_transpose(self.decoder_1, filters=32, name="conv2d_trans_2")
         self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
         self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
@@ -111,23 +105,33 @@ class Autoencoder(object):
         self.input_images_2 = tf.image.convert_image_dtype(self.input_images_1, tf.float32, saturate=True)
         self.encoder_1 = self.conv2d(self.input_images_1, filters=16, name="conv2_1")
         self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
-        self.encoder_3 = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
+        self.encoder_final = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
 
-        shape = self.encoder_3.get_shape().as_list()
+        self.vae()
 
-        dim = 1
-        for d in shape[1:]:
-            dim *= d
-        
-        # flatten
-        self.latent = tf.reshape(self.encoder_3, [-1, dim], name="feature")
-
-        self.decoder_2 = self.conv2d_transpose(self.encoder_3, filters=32, name="conv2d_trans_2")
+        self.decoder_2 = self.conv2d_transpose(self.encode_out, filters=32, name="conv2d_trans_2")
         self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
         self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
         self.output_images = self.decoder_4
         tf.summary.image('output', self.output_images)
         self.output_images_1 = tf.image.convert_image_dtype(self.output_images, tf.float32, saturate=True)
+
+    def build_3(self):
+
+        self.input_images_2 = tf.image.convert_image_dtype(self.input_images_1, tf.float32, saturate=True)
+        self.encoder_1 = self.conv2d(self.input_images_1, filters=16, name="conv2_1")
+        self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
+        self.encoder_final = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
+
+        self.vae()
+
+        self.decoder_2 = self.conv2d_transpose(self.encode_out, filters=32, name="conv2d_trans_2")
+        self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
+        self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
+        self.output_images = self.decoder_4
+        tf.summary.image('output', self.output_images)
+        self.output_images_1 = tf.image.convert_image_dtype(self.output_images, tf.float32, saturate=True)
+
 
     def conv2d(self, bottom, filters, kernel_size=[5,5], stride=2, padding="SAME", name="conv2d"):
         layer = tf.layers.conv2d(bottom, filters, kernel_size, stride, padding)
@@ -141,16 +145,73 @@ class Autoencoder(object):
         layer = tf.nn.relu(layer)
         return layer
 
+    def vae(self):
+        shape = self.encoder_final.get_shape().as_list()
+
+        dim = 1
+        for d in shape[1:]:
+            dim *= d
+
+        # flatten
+        self.latent = tf.reshape(self.encoder_final, [-1, dim], name="feature")
+        self.z_mu = tf.layers.dense(self.latent, self.opt.num_units)
+        self.z_log_sigma_sq = tf.layers.dense(self.latent, self.opt.num_units)
+        eps = tf.random_normal(shape=tf.shape(self.z_log_sigma_sq),
+                               mean=0, stddev=1, dtype=tf.float32)
+        self.z = self.z_mu + tf.sqrt(tf.exp(self.z_log_sigma_sq)) * eps
+
+        if self.opt.vae:
+            self.encode_out = tf.reshape(tf.layers.dense(self.z, dim, activation='relu'), shape)
+        else:
+            self.encode_out = self.encoder_final
+
+        self.class_1 = tf.layers.dense(self.latent, 200)
+        self.class_2 = tf.layers.dense(self.class_1, 50)
+        self.final_sm = tf.layers.dense(self.class_2, len(self.all_labels))
+
     def add_loss(self):
         """
         Defining a loss term (l2 loss)
         """
         with tf.variable_scope("loss"):
-            diff = self.input_images_1 - self.output_images
-            if self.opt.loss == 'l2':
-                self.loss = tf.divide(tf.nn.l2_loss(diff), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
-            else: self.loss = tf.divide(tf.reduce_sum(tf.abs(diff)), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
-            tf.summary.scalar("loss", self.loss)
+            
+            #---------LATENT LOSS-------------------------
+            latent_loss = -0.5 * tf.reduce_sum(
+                1 + self.z_log_sigma_sq - tf.square(self.z_mu) - tf.exp(self.z_log_sigma_sq), axis=1)
+            self.latent_loss = tf.reduce_mean(latent_loss)
+            tf.summary.scalar('latent loss', self.latent_loss)
+
+            #--------RECONSTRUCTION LOSS------------------------
+            epsilon = 1e-10
+            recon_loss = -tf.reduce_sum(
+            self.input_images_1 * tf.log(epsilon+self.output_images) + (1-self.input_images_1) * tf.log(epsilon+1-self.output_images),
+                axis=[1,2,3]) #Cross Entropy
+            print(recon_loss.shape, 'recon_loss shape')
+            self.recon_loss = tf.reduce_mean(recon_loss)
+            tf.summary.scalar('reconstruction loss', self.recon_loss)
+
+            #----------CROSS ENTROPY LOSS------------------------
+            self.accuracy_loss = 0
+            if self.opt.build == 3:
+                self.accuracy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.ans, logits=self.final_sm))
+                tf.summary.scalar('cross_entropy', cross_entropy)
+
+            #----------TOTAL LOSS------------------
+            self.loss = self.recon_loss + self.latent_loss + self.accuracy_loss
+            tf.summary.scalar("total loss", self.loss)
+
+        with tf.name_scope('accuracy'):
+            correct_prediction = tf.equal(tf.argmax(self.final_sm, 1), self.ans)
+            correct_prediction = tf.cast(correct_prediction, tf.float32)
+            self.accuracy = tf.reduce_mean(correct_prediction)
+            tf.summary.scalar('accuracy', self.accuracy)
+
+        # OLD METHOD OF L2 and L1 loss
+        # diff = self.input_images_1 - self.output_images
+        # if self.opt.loss == 'l2':
+        #     self.loss = tf.divide(tf.nn.l2_loss(diff), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
+        # else: self.loss = tf.divide(tf.reduce_sum(tf.abs(diff)), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
+
 
     def train_iter(self, session, train_writer, val_writer, iStep, iEpoch):
         """
@@ -160,17 +221,18 @@ class Autoencoder(object):
         feed_dict_train = {self.learning_rate:self.opt.learning_rate, self.handle:self.training_handle}
         feed_dict_val = {self.learning_rate:self.opt.learning_rate, self.handle:self.validation_handle}
 
-        output_feed_train = [self.updates, self.summaries, self.global_step, self.loss]
-        output_feed_val = [self.summaries, self.global_step, self.loss]
+        output_feed_train = [self.updates, self.summaries, self.global_step, self.loss, self.accuracy]
+        output_feed_val = [self.summaries, self.global_step, self.loss, self.accuracy]
 
         if iStep == 0:
             print("* epoch: " + str(float(k) / float(self.num_images_epoch)))
-            [_, summaries, global_step, loss] = session.run(output_feed_train, feed_dict_train)
+            [_, summaries, global_step, loss, acc] = session.run(output_feed_train, feed_dict_train)
             train_writer.add_summary(summaries, k)
             print('train loss:', loss)
+            print('train acc:', acc)
             sys.stdout.flush()
 
-            [summaries, global_step, loss] = session.run(output_feed_val, feed_dict_val)
+            [summaries, global_step, loss, acc] = session.run(output_feed_val, feed_dict_val)
             val_writer.add_summary(summaries, k)
 
             if iEpoch == self.opt.num_epochs - 1:
@@ -181,6 +243,7 @@ class Autoencoder(object):
                     f.write('\n')
 
             print('val loss:', loss)
+            print('val acc:', acc)
             sys.stdout.flush()
         else:
             [_, summaries, global_step, loss] = session.run(output_feed_train, feed_dict_train)
@@ -281,30 +344,34 @@ class Autoencoder(object):
         num_iter = len(self.dataset.val_addrs)//self.opt.batch_size
 
         feed_dict_val = {self.learning_rate:self.opt.learning_rate, self.handle:validation_handle}
-        output_feed = [self.latent, self.input_images_2, self.input_images, self.output_images_1, self.ans, self.mean, self.std]
+        output_feed = [self.latent, self.input_images_2, self.input_images, self.output_images_1, self.ans, self.mean, self.std, self.accuracy]
         score = 0
-
+        total_acc = 0
         for mini in range(num_iter):
 
-            lat_vec, input_im, input_im_1, output_im, label, mn, std = session.run(output_feed, feed_dict_val)
-
-            #print(input_im.shape, 'input images shape')
-            #print(output_im.shape, 'output images shape')
-
-            #input_im = self.deprocess(input_im_1, mn, std, norm=True)
-            #output_im = self.deprocess(output_im, mn, std, norm=True)
+            lat_vec, input_im, input_im_1, output_im, label, mn, std, acc = session.run(output_feed, feed_dict_val)
 
             self.autovis(mini, input_im, output_im)
             self.simrank(mini, lat_vec, label, input_im)
             score += self.evaluation_score(lat_vec, label, self.opt.batch_size)
 
+            total_acc += acc
+
         score = score / num_iter
+        report_acc = total_acc/num_iter
         if not os.path.isfile(self.opt.resultline):
             open(self.opt.resultline, 'a').close()
         with open(self.opt.resultline, 'a+') as f:
             f.write(str(self.opt.ID) + ',' + str(score))
             f.write('\n')
-        print('Final Score: ', score)
+
+        if not os.path.isfile(self.opt.accline):
+            open(self.opt.accline, 'a').close()
+        with open(self.opt.accline, 'a+') as f:
+            f.write(str(self.opt.ID) + ',' + str(report_acc))
+            f.write('\n')
+
+        print('Final Score:', score)
         print('Successfully completed testing :)')
 
 
@@ -341,6 +408,7 @@ class Autoencoder(object):
         fig = plt.figure()
         numofpairs = 1
         for original, modified in zip(inims, outims):
+
             if numofpairs == 21:
                 break
             ax = fig.add_subplot(5,4,numofpairs)
@@ -349,8 +417,10 @@ class Autoencoder(object):
             ax = fig.add_subplot(5,4,numofpairs)
             ax.imshow(modified)
             numofpairs += 1
+
         if not os.path.exists(self.opt.figline + 'autovis/'):
             os.makedirs(self.opt.figline + 'autovis/')
+
         plt.axis('off')
         plt.savefig(self.opt.figline + 'autovis/' + str(id_num) + '.pdf', dpi=1000)
         plt.close()

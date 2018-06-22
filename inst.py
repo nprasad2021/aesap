@@ -3,14 +3,14 @@ import parameters
 
 #### PARAMETERS
 # Final TUNING
-dsts = ['sap_data', 'all_data', 'open_data']
-lrs = [.005, .001, .0005, .0001]
-img_sizes = [112, 144, 192, 224]
-scale = [1,32,64,128]
-slide = [0, 64, -64]
-loss = ['l2', 'l1']
-bs = [32, 64, 128]
-build = [2,1]
+dsts = ['all_data', 'open_data', 'sap_data']
+lrs = [.001, .0005, .0001]
+img_sizes = [144, 192]
+scale = [1]
+slide = [0]
+bs = [32, 64]
+build = [3,2,1]
+num_units = [50, 100, 150, 200]
 
 
 def gen_tune_exp(precursor):
@@ -28,21 +28,23 @@ def gen_tune_exp(precursor):
 				for b in bs:
 					for lr in lrs:
 						for imsize in img_sizes:
-							for l in loss:
-								for bill in build:
+							for bill in build:
+								for hidden in num_units:
 
-									name = 'tune_lr' #+ str(lr) + '_' + dst + '_' + str(imsize) + '_sc' + str(sc) + '_sl' + str(sl) + '_bui' + str(bill) + '_l' + str(l) + '_bs' + str(b)
+
+									name = 'vae' #+ str(lr) + '_' + dst + '_' + str(imsize) + '_sc' + str(sc) + '_sl' + str(sl) + '_bui' + str(bill) + '_l' + str(l) + '_bs' + str(b)
 									opt += [parameters.Experiment(identity=idx, name=name, precursor=precursor, datatype=dst)]
 									opt[-1].image_size = imsize
 									opt[-1].learning_rate = lr
 									opt[-1].outfile = 'finalresults.txt'
 									opt[-1].scale = sc
 									opt[-1].slide = sl
-									opt[-1].loss = l
 									opt[-1].batch_size = b
 									opt[-1].build = bill
 									opt[-1].restart = True
-									opt[-1].mode = 'test'
+									opt[-1].mode = 'both'
+									opt[-1].num_units = hidden
+									opt[-1].category = 'arch/'
 
 									idx += 1
 
