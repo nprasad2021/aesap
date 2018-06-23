@@ -54,8 +54,8 @@ class Autoencoder(object):
         self.inc_global_step = tf.assign_add(self.global_step, 1, name='increment')
 
         grads = list(zip(gradients, params))
-        #for g, v in grads:
-        #    gradient_summaries(g, v, opt)
+        for g, v in grads:
+            gradient_summaries(g, v, opt)
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
         self.updates = optimizer.apply_gradients(zip(gradients, params), global_step=self.global_step)
@@ -203,7 +203,6 @@ class Autoencoder(object):
             self.loss = self.recon_loss + self.latent_loss + self.accuracy_loss
             tf.summary.scalar("total loss", self.loss)
 
-        with tf.name_scope('accuracy'):
             correct_prediction = tf.equal(tf.argmax(self.final_sm, 1), self.ans)
             correct_prediction = tf.cast(correct_prediction, tf.float32)
             self.accuracy = tf.reduce_mean(correct_prediction)
@@ -227,9 +226,17 @@ class Autoencoder(object):
         output_feed_train = [self.updates, self.summaries, self.global_step, self.loss, self.accuracy]
         output_feed_val = [self.summaries, self.global_step, self.loss, self.accuracy]
 
+        output_feed = [self.latent_loss, self.recon_loss, self.accuracy_loss]
+
         if iStep == 0:
             print("* epoch: " + str(float(k) / float(self.num_images_epoch)))
             [_, summaries, global_step, loss, acc] = session.run(output_feed_train, feed_dict_train)
+            [lat, rect, accl] = session.run(output_feed, feed_dict_train)
+
+            print('latent loss: ', lat)
+            print('reconstruction loss: ', rect)
+            print('cross entropy loss: ', accl)
+            
             train_writer.add_summary(summaries, k)
             print('train loss:', loss)
             print('train acc:', acc)
