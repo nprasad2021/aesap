@@ -176,11 +176,13 @@ class Autoencoder(object):
         with tf.variable_scope("loss"):
             
             #---------LATENT LOSS-------------------------
-            self.m_1 = tf.reduce_sum(tf.square(self.z_mu))
-            self.m_2 = tf.reduce_sum(tf.exp(self.z_log_sigma_sq))
+            self.m_1 = tf.square(self.z_mu)
+            self.m_2 = tf.exp(self.z_log_sigma_sq)
+
+            self.m_3 = 1 + self.z_log_sigma_sq - self.m_1 - self.m_2
 
             latent_loss = -0.5 * tf.reduce_sum(
-                1 + self.z_log_sigma_sq - self.m_1 - self.m_2, axis=1)
+                self.m_3, axis=1)
             print(latent_loss.shape, 'latent_loss shape')
             self.latent_loss = tf.reduce_mean(latent_loss)
             print(self.latent_loss.shape, 'latent_loss shape after mean over batch')
@@ -229,17 +231,18 @@ class Autoencoder(object):
         output_feed_train = [self.updates, self.summaries, self.global_step, self.loss, self.accuracy]
         output_feed_val = [self.summaries, self.global_step, self.loss, self.accuracy]
 
-        output_feed_loss = [self.latent_loss, self.recon_loss, self.m_1, self.m_2]
+        output_feed_loss = [self.latent_loss, self.recon_loss, self.m_1, self.m_2, self.m_3]
 
         if iStep == 0:
             print("* epoch: " + str(float(k) / float(self.num_images_epoch)))
             [_, summaries, global_step, loss, acc] = session.run(output_feed_train, feed_dict_train)
-            [lat, rect, m_1, m_2] = session.run(output_feed_loss, feed_dict_train)
+            [lat, rect, m_1, m_2, m_3] = session.run(output_feed_loss, feed_dict_train)
 
             print('latent loss: ', lat)
             print('reconstruction loss: ', rect)
             print('m_1: ', m_1)
             print('m_2: ', m_2)
+            print('m_3: ', m_3)
 
             train_writer.add_summary(summaries, k)
             print('train loss:', loss)
