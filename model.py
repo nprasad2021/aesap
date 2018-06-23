@@ -226,17 +226,17 @@ class Autoencoder(object):
         output_feed_train = [self.updates, self.summaries, self.global_step, self.loss, self.accuracy]
         output_feed_val = [self.summaries, self.global_step, self.loss, self.accuracy]
 
-        output_feed = [self.latent_loss, self.recon_loss, self.accuracy_loss]
+        output_feed_loss = [self.latent_loss, self.recon_loss, self.accuracy_loss]
 
         if iStep == 0:
             print("* epoch: " + str(float(k) / float(self.num_images_epoch)))
             [_, summaries, global_step, loss, acc] = session.run(output_feed_train, feed_dict_train)
-            [lat, rect, accl] = session.run(output_feed, feed_dict_train)
+            [lat, rect, accl] = session.run(output_feed_loss, feed_dict_train)
 
             print('latent loss: ', lat)
             print('reconstruction loss: ', rect)
             print('cross entropy loss: ', accl)
-            
+
             train_writer.add_summary(summaries, k)
             print('train loss:', loss)
             print('train acc:', acc)
