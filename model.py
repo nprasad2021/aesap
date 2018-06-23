@@ -54,8 +54,8 @@ class Autoencoder(object):
         self.inc_global_step = tf.assign_add(self.global_step, 1, name='increment')
 
         grads = list(zip(gradients, params))
-        for g, v in grads:
-            gradient_summaries(g, v, opt)
+        #for g, v in grads:
+        #    gradient_summaries(g, v, opt)
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
         self.updates = optimizer.apply_gradients(zip(gradients, params), global_step=self.global_step)
