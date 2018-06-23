@@ -234,7 +234,7 @@ class Autoencoder(object):
         if iStep == 0:
             print("* epoch: " + str(float(k) / float(self.num_images_epoch)))
             [_, summaries, global_step, loss, acc] = session.run(output_feed_train, feed_dict_train)
-            [lat, rect, accl, m_1, m_2] = session.run(output_feed_loss, feed_dict_train)
+            [lat, rect, m_1, m_2] = session.run(output_feed_loss, feed_dict_train)
 
             print('latent loss: ', lat)
             print('reconstruction loss: ', rect)
