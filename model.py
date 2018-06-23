@@ -167,7 +167,7 @@ class Autoencoder(object):
 
         self.class_1 = tf.layers.dense(self.latent, 200, tf.nn.relu)
         self.class_2 = tf.layers.dense(self.class_1, 50, tf.nn.relu)
-        self.final_sm = tf.layers.dense(self.class_2, len(self.dataset.all_labels))
+        self.final_sm = tf.layers.dense(self.class_2, len(self.dataset.all_labels), tf.nn.relu)
 
     def add_loss(self):
         """
@@ -178,7 +178,9 @@ class Autoencoder(object):
             #---------LATENT LOSS-------------------------
             latent_loss = -0.5 * tf.reduce_sum(
                 1 + self.z_log_sigma_sq - tf.square(self.z_mu) - tf.exp(self.z_log_sigma_sq), axis=1)
+            print(latent_loss.shape, 'latent_loss shape')
             self.latent_loss = tf.reduce_mean(latent_loss)
+            print(self.latent_loss.shape, 'latent_loss shape after mean over batch')
             tf.summary.scalar('latent loss', self.latent_loss)
 
             #--------RECONSTRUCTION LOSS------------------------
@@ -188,13 +190,14 @@ class Autoencoder(object):
                 axis=[1,2,3]) #Cross Entropy
             print(recon_loss.shape, 'recon_loss shape')
             self.recon_loss = tf.reduce_mean(recon_loss)
+            print(self.recon_loss.shape, 'recon_loss shape')
             tf.summary.scalar('reconstruction loss', self.recon_loss)
 
             #----------CROSS ENTROPY LOSS------------------------
-            self.accuracy_loss = 0
+            self.accuracy_loss = tf.constant(0, dtype=tf.float32)
             if self.opt.build == 3:
                 self.accuracy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.ans, logits=self.final_sm))
-                tf.summary.scalar('cross_entropy', self.accuracy_loss)
+            tf.summary.scalar('cross_entropy', self.accuracy_loss)
 
             #----------TOTAL LOSS------------------
             self.loss = self.recon_loss + self.latent_loss + self.accuracy_loss
