@@ -7,4 +7,4 @@
 
 singularity exec -B /om:/om /om/user/nprasad/singularity/xboix-singularity-tensorflow.img tensorboard \
 --port=8022 \
---logdir=/om/user/nprasad/aesap/log/initial/
+--logdir=/om/user/nprasad/aesap/log/arch/
