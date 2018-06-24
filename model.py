@@ -231,7 +231,7 @@ class Autoencoder(object):
         output_feed_train = [self.updates, self.summaries, self.global_step, self.loss, self.accuracy]
         output_feed_val = [self.summaries, self.global_step, self.loss, self.accuracy]
 
-        output_feed_loss = [self.latent_loss, self.recon_loss, self.m_1, self.m_2, self.m_3]
+        output_feed_loss = [self.latent_loss, self.recon_loss, self.z_mu, self.z_log_sigma_sq, self.latent]
 
         if iStep == 0:
             print("* epoch: " + str(float(k) / float(self.num_images_epoch)))
