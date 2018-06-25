@@ -112,7 +112,7 @@ class Autoencoder(object):
             self.vae()
         else:
             self.lt_add()
-            
+
         self.decoder_2 = self.conv2d_transpose(self.encode_out, filters=32, name="conv2d_trans_2")
         self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
         self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
@@ -185,6 +185,10 @@ class Autoencoder(object):
         # flatten
         self.latent = tf.reshape(self.encoder_final, [-1, dim], name="feature")
         self.encode_out = self.encoder_final
+
+        self.class_1 = tf.layers.dense(self.latent, 200, tf.nn.relu)
+        self.class_2 = tf.layers.dense(self.class_1, 50, tf.nn.relu)
+        self.final_sm = tf.layers.dense(self.class_2, len(self.dataset.all_labels))
 
 
     def add_loss(self):
