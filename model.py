@@ -199,7 +199,7 @@ class Autoencoder(object):
 
             diff = self.input_images_1 - self.output_images
             if self.opt.loss == 'l2':
-                self.recond_loss = tf.divide(tf.nn.l2_loss(diff), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
+                self.recon_loss = tf.divide(tf.nn.l2_loss(diff), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
             else: self.recon_loss = tf.divide(tf.reduce_sum(tf.abs(diff)), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
             tf.summary.scalar('reconstruction loss', self.recon_loss)
 
