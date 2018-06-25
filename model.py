@@ -69,8 +69,6 @@ class Autoencoder(object):
         Adding placeholder
         """
         self.input_images, self.ans = self.iterator.get_next()
-        self.test = tf.placeholder(tf.bool, shape=())
-
         self.preprocess()
         tf.summary.image('input', self.input_images_1)
         self.learning_rate = tf.placeholder(tf.float32, shape=())
@@ -231,18 +229,19 @@ class Autoencoder(object):
         output_feed_train = [self.updates, self.summaries, self.global_step, self.loss, self.accuracy]
         output_feed_val = [self.summaries, self.global_step, self.loss, self.accuracy]
 
-        output_feed_loss = [self.latent_loss, self.recon_loss, self.z_mu, self.z_log_sigma_sq, self.latent]
+        output_feed_loss = [self.latent, self.recon_loss, self.z_mu, self.z_log_sigma_sq, self.latent, self.encoder_final]
 
         if iStep == 0:
             print("* epoch: " + str(float(k) / float(self.num_images_epoch)))
             [_, summaries, global_step, loss, acc] = session.run(output_feed_train, feed_dict_train)
-            [lat, rect, m_1, m_2, m_3] = session.run(output_feed_loss, feed_dict_train)
+            [lat_l, rect, mu, log_mu, lat, enc_f] = session.run(output_feed_loss, feed_dict_train)
 
-            print('latent loss: ', lat)
+            print('latent loss: ', lat_l)
             print('reconstruction loss: ', rect)
-            print('m_1: ', m_1)
-            print('m_2: ', m_2)
-            print('m_3: ', m_3)
+            print('mu: ', mu)
+            print('log_mu: ', log_mu)
+            print('latent vector: ', lat)
+            print("encoder final", enc_f)
 
             train_writer.add_summary(summaries, k)
             print('train loss:', loss)
