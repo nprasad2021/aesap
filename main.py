@@ -21,9 +21,11 @@ def main():
     factor = int(sys.argv[3])
 
     ID += factor*1000
+    
     opt = inst.gen_tune_exp(precursor)[ID]
+    opt.reinitialize_paths()
+
     print(opt)
-    print(opt.pipeline)
 
     #TRAIN
     tf.reset_default_graph()

@@ -54,6 +54,16 @@ class Experiment(object):
         self.accline = self.precursor + self.overname + '_' + self.accuracy
         self.tfr_out = self.precursor + 'data/' + self.tdata + '/records/' # TFRecords Output Path
 
+    def reinitialize_paths(self):
+        self.pipeline = self.precursor + self.log_dir_base + self.category + self.name
+        self.figline = self.precursor + self.overname + '_' + self.fig_dir_base + self.category + self.name + '/'
+        self.resultline = self.precursor + self.overname + '_' + self.results
+        self.accline = self.precursor + self.overname + '_' + self.accuracy
+        self.tfr_out = self.precursor + 'data/' + self.tdata + '/records/' # TFRecords Output Path
+        self.train_dir = self.precursor + 'data/' + self.tdata +  '/train/' # Training Directory
+        self.val_dir = self.precursor + 'data/' + self.tdata + '/val/' # Validation Directory
+
+
     def __str__(self):
         a = '--------Model Parameters----- \n'
         a += 'Name: ' + str(self.name) + '\n'
@@ -69,6 +79,7 @@ class Experiment(object):
         a += 'Pipeline: ' + self.pipeline + '\n' 
         a += '-----------------------------------'
         return a
+
 
 
 
