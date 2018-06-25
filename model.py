@@ -84,7 +84,10 @@ class Autoencoder(object):
         self.encoder_3 = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
         self.encoder_final = self.conv2d(self.encoder_3, filters=128, name="conv2_4")
 
-        self.vae()
+        if self.opt.vae:
+            self.vae()
+        else:
+            self.lt_add()
 
         # Decoders
         self.decoder_1 = self.conv2d_transpose(self.encode_out, filters=64, name="conv2d_trans_1")
@@ -105,8 +108,11 @@ class Autoencoder(object):
         self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
         self.encoder_final = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
 
-        self.vae()
-
+        if self.opt.vae:
+            self.vae()
+        else:
+            self.lt_add()
+            
         self.decoder_2 = self.conv2d_transpose(self.encode_out, filters=32, name="conv2d_trans_2")
         self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
         self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
@@ -120,8 +126,10 @@ class Autoencoder(object):
         self.encoder_1 = self.conv2d(self.input_images_1, filters=16, name="conv2_1")
         self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
         self.encoder_final = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
-
-        self.vae()
+        if self.opt.vae:
+            self.vae()
+        else:
+            self.lt_add()
 
         self.decoder_2 = self.conv2d_transpose(self.encode_out, filters=32, name="conv2d_trans_2")
         self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
@@ -167,6 +175,18 @@ class Autoencoder(object):
         self.class_2 = tf.layers.dense(self.class_1, 50, tf.nn.relu)
         self.final_sm = tf.layers.dense(self.class_2, len(self.dataset.all_labels))
 
+    def lt_add(self):
+        shape = self.encoder_final.get_shape().as_list()
+
+        dim = 1
+        for d in shape[1:]:
+            dim *= d
+
+        # flatten
+        self.latent = tf.reshape(self.encoder_final, [-1, dim], name="feature")
+        self.encode_out = self.encoder_final
+
+
     def add_loss(self):
         """
         Defining a loss term (l2 loss)
@@ -204,7 +224,6 @@ class Autoencoder(object):
             tf.summary.scalar('reconstruction loss', self.recon_loss)
 
             #----------CROSS ENTROPY LOSS------------------------
-            self.accuracy_loss = 0
             if self.opt.build == 3:
                 self.accuracy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.ans, logits=self.final_sm))
             tf.summary.scalar('cross_entropy', self.accuracy_loss)
