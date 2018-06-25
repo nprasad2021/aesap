@@ -210,7 +210,10 @@ class Autoencoder(object):
             tf.summary.scalar('cross_entropy', self.accuracy_loss)
 
             #----------TOTAL LOSS------------------
-            self.loss = self.recon_loss + self.latent_loss + self.accuracy_loss
+            if self.opt.build == 3:
+                self.loss = self.recon_loss + self.accuracy_loss
+            else:
+                self.loss = self.recon_loss
             tf.summary.scalar("total loss", self.loss)
 
             correct_prediction = tf.equal(tf.argmax(self.final_sm, 1), self.ans)
