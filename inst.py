@@ -32,7 +32,7 @@ def gen_tune_exp(precursor):
 								for hidden in num_units:
 
 
-									name = 'vae' #+ str(lr) + '_' + dst + '_' + str(imsize) + '_sc' + str(sc) + '_sl' + str(sl) + '_bui' + str(bill) + '_l' + str(l) + '_bs' + str(b)
+									name = 'accuracy' #+ str(lr) + '_' + dst + '_' + str(imsize) + '_sc' + str(sc) + '_sl' + str(sl) + '_bui' + str(bill) + '_l' + str(l) + '_bs' + str(b)
 									opt += [parameters.Experiment(identity=idx, name=name, precursor=precursor, datatype=dst)]
 									opt[-1].image_size = imsize
 									opt[-1].learning_rate = lr

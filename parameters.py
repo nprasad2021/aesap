@@ -23,7 +23,7 @@ class Experiment(object):
         self.K = 10 # Similarity Score, show _ queries
         self.similarity_distance = 'cosine'
         self.classification = False
-        self.vae = True
+        self.vae = False
 
         self.save_every = 1000
         self.decay_every = 1000

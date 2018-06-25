@@ -1,4 +1,4 @@
-# Neeraj Prasad (neural net based on Hyun siamese autoencoder)
+# Neeraj Prasad
 # End-to-end one-shot autoencoder model
 # Supports tensorboard, generates image data efficiently via 
 # TFRecords. Saves best model w/ metadata
@@ -54,8 +54,8 @@ class Autoencoder(object):
         self.inc_global_step = tf.assign_add(self.global_step, 1, name='increment')
 
         grads = list(zip(gradients, params))
-        #for g, v in grads:
-        #    gradient_summaries(g, v, opt)
+        for g, v in grads:
+            gradient_summaries(g, v, opt)
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
         self.updates = optimizer.apply_gradients(zip(gradients, params), global_step=self.global_step)
@@ -165,7 +165,7 @@ class Autoencoder(object):
 
         self.class_1 = tf.layers.dense(self.latent, 200, tf.nn.relu)
         self.class_2 = tf.layers.dense(self.class_1, 50, tf.nn.relu)
-        self.final_sm = tf.layers.dense(self.class_2, len(self.dataset.all_labels), tf.nn.relu)
+        self.final_sm = tf.layers.dense(self.class_2, len(self.dataset.all_labels))
 
     def add_loss(self):
         """
@@ -174,30 +174,37 @@ class Autoencoder(object):
         with tf.variable_scope("loss"):
             
             #---------LATENT LOSS-------------------------
-            self.m_1 = tf.square(self.z_mu)
-            self.m_2 = tf.exp(self.z_log_sigma_sq)
+            # self.m_1 = tf.square(self.z_mu)
+            # self.m_2 = tf.exp(self.z_log_sigma_sq)
 
-            self.m_3 = 1 + self.z_log_sigma_sq - self.m_1 - self.m_2
+            # self.m_3 = 1 + self.z_log_sigma_sq - self.m_1 - self.m_2
 
-            latent_loss = -0.5 * tf.reduce_sum(
-                self.m_3, axis=1)
-            print(latent_loss.shape, 'latent_loss shape')
-            self.latent_loss = tf.reduce_mean(latent_loss)
-            print(self.latent_loss.shape, 'latent_loss shape after mean over batch')
-            tf.summary.scalar('latent loss', self.latent_loss)
+            # latent_loss = -0.5 * tf.reduce_sum(
+            #     self.m_3, axis=1)
+            # print(latent_loss.shape, 'latent_loss shape')
+            # self.latent_loss = tf.reduce_mean(latent_loss)
+            # print(self.latent_loss.shape, 'latent_loss shape after mean over batch')
+            # tf.summary.scalar('latent loss', self.latent_loss)
+            self.latent_loss = 0
 
             #--------RECONSTRUCTION LOSS------------------------
-            epsilon = 1e-10
-            recon_loss = -tf.reduce_sum(
-            self.input_images_1 * tf.log(epsilon+self.output_images) + (1-self.input_images_1) * tf.log(epsilon+1-self.output_images),
-                axis=[1,2,3]) #Cross Entropy
-            print(recon_loss.shape, 'recon_loss shape')
-            self.recon_loss = tf.reduce_mean(recon_loss)
-            print(self.recon_loss.shape, 'recon_loss shape')
+            # epsilon = 1e-10
+            # recon_loss = -tf.reduce_sum(
+            # self.input_images_1 * tf.log(epsilon+self.output_images) + (1-self.input_images_1) * tf.log(epsilon+1-self.output_images),
+            #     axis=[1,2,3]) #Cross Entropy
+            # print(recon_loss.shape, 'recon_loss shape')
+            # self.recon_loss = tf.reduce_mean(recon_loss)
+            # print(self.recon_loss.shape, 'recon_loss shape')
+            # tf.summary.scalar('reconstruction loss', self.recon_loss)
+
+            diff = self.input_images_1 - self.output_images
+            if self.opt.loss == 'l2':
+                self.recond_loss = tf.divide(tf.nn.l2_loss(diff), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
+            else: self.recon_loss = tf.divide(tf.reduce_sum(tf.abs(diff)), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
             tf.summary.scalar('reconstruction loss', self.recon_loss)
 
             #----------CROSS ENTROPY LOSS------------------------
-            self.accuracy_loss = tf.constant(0, dtype=tf.float32)
+            self.accuracy_loss = 0
             if self.opt.build == 3:
                 self.accuracy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.ans, logits=self.final_sm))
             tf.summary.scalar('cross_entropy', self.accuracy_loss)
@@ -212,10 +219,6 @@ class Autoencoder(object):
             tf.summary.scalar('accuracy', self.accuracy)
 
         # OLD METHOD OF L2 and L1 loss
-        # diff = self.input_images_1 - self.output_images
-        # if self.opt.loss == 'l2':
-        #     self.loss = tf.divide(tf.nn.l2_loss(diff), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
-        # else: self.loss = tf.divide(tf.reduce_sum(tf.abs(diff)), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
 
 
     def train_iter(self, session, train_writer, val_writer, iStep, iEpoch):
@@ -229,19 +232,9 @@ class Autoencoder(object):
         output_feed_train = [self.updates, self.summaries, self.global_step, self.loss, self.accuracy]
         output_feed_val = [self.summaries, self.global_step, self.loss, self.accuracy]
 
-        output_feed_loss = [self.latent, self.recon_loss, self.z_mu, self.z_log_sigma_sq, self.latent, self.encoder_final]
-
         if iStep == 0:
             print("* epoch: " + str(float(k) / float(self.num_images_epoch)))
             [_, summaries, global_step, loss, acc] = session.run(output_feed_train, feed_dict_train)
-            [lat_l, rect, mu, log_mu, lat, enc_f] = session.run(output_feed_loss, feed_dict_train)
-
-            print('latent loss: ', lat_l)
-            print('reconstruction loss: ', rect)
-            print('mu: ', mu)
-            print('log_mu: ', log_mu)
-            print('latent vector: ', lat)
-            print("encoder final", enc_f)
 
             train_writer.add_summary(summaries, k)
             print('train loss:', loss)
@@ -423,6 +416,7 @@ class Autoencoder(object):
 
         fig = plt.figure()
         numofpairs = 1
+
         for original, modified in zip(inims, outims):
 
             if numofpairs == 21:
