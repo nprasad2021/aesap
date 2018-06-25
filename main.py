@@ -23,6 +23,7 @@ def main():
     ID += factor*1000
     opt = inst.gen_tune_exp(precursor)[ID]
     print(opt)
+    print(opt.pipeline)
 
     #TRAIN
     tf.reset_default_graph()
