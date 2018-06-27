@@ -9,14 +9,11 @@ import time
 import random
 import shutil
 import sys
+import random
 
 import numpy as np
 import tensorflow as tf
-import load_data
-
-import matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
+import load_data, utils
 
 
 class Autoencoder(object):
@@ -32,6 +29,9 @@ class Autoencoder(object):
         train_dataset = self.dataset.create_dataset(set_name='train')
         val_dataset = self.dataset.create_dataset(set_name='val')
 
+        ## Non-repeatable Datasets for Testing
+        generate_code_dataset = self.dataset.create_dataset_result(set_name='val', repeat=False)
+
         # Handles to switch datasets
         self.handle = tf.placeholder(tf.string, shape=[])
         self.iterator = tf.data.Iterator.from_string_handle(
@@ -39,6 +39,8 @@ class Autoencoder(object):
 
         self.train_iterator = train_dataset.make_one_shot_iterator()
         self.val_iterator = val_dataset.make_one_shot_iterator()
+        self.generate_code_iterator = generate_code_dataset.make_one_shot_iterator()
+        self.test_iterator = test_val_dataset.make_one_shot_iterator()
 
         with tf.variable_scope("one_shot_ae", initializer=tf.contrib.layers.variance_scaling_initializer(factor=1.0, uniform=True)):
             self.add_placeholders()
@@ -55,7 +57,7 @@ class Autoencoder(object):
 
         grads = list(zip(gradients, params))
         for g, v in grads:
-            gradient_summaries(g, v, opt)
+            utils.gradient_summaries(g, v, opt)
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
         self.updates = optimizer.apply_gradients(zip(gradients, params), global_step=self.global_step)
@@ -68,7 +70,7 @@ class Autoencoder(object):
         """
         Adding placeholder
         """
-        self.input_images, self.ans = self.iterator.get_next()
+        self.input_images, self.ans, self.addrs = self.iterator.get_next()
         self.preprocess()
         tf.summary.image('input', self.input_images_1)
         self.learning_rate = tf.placeholder(tf.float32, shape=())
@@ -79,15 +81,12 @@ class Autoencoder(object):
         """
         # Encoders
         self.input_images_2 = tf.image.convert_image_dtype(self.input_images_1, tf.float32, saturate=True)
-        self.encoder_1 = self.conv2d(self.input_images_1, filters=16, name="conv2_1")
+        self.encoder_1 = self.conv2d(self.input_images_1, filters=16, kernel_size=[7,7], name="conv2_1")
         self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
         self.encoder_3 = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
         self.encoder_final = self.conv2d(self.encoder_3, filters=128, name="conv2_4")
 
-        if self.opt.vae:
-            self.vae()
-        else:
-            self.lt_add()
+        self.lt_add()
 
         # Decoders
         self.decoder_1 = self.conv2d_transpose(self.encode_out, filters=64, name="conv2d_trans_1")
@@ -104,14 +103,12 @@ class Autoencoder(object):
         """
         # Encoders
         self.input_images_2 = tf.image.convert_image_dtype(self.input_images_1, tf.float32, saturate=True)
-        self.encoder_1 = self.conv2d(self.input_images_1, filters=16, name="conv2_1")
+        self.encoder_1 = self.conv2d(self.input_images_1, filters=16, kernel_size=[7,7], name="conv2_1")
         self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
         self.encoder_final = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
 
-        if self.opt.vae:
-            self.vae()
-        else:
-            self.lt_add()
+
+        self.lt_add()
 
         self.decoder_2 = self.conv2d_transpose(self.encode_out, filters=32, name="conv2d_trans_2")
         self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
@@ -123,13 +120,11 @@ class Autoencoder(object):
     def build_3(self):
 
         self.input_images_2 = tf.image.convert_image_dtype(self.input_images_1, tf.float32, saturate=True)
-        self.encoder_1 = self.conv2d(self.input_images_1, filters=16, name="conv2_1")
+        self.encoder_1 = self.conv2d(self.input_images_1, filters=16, kernel_size=[7,7], name="conv2_1")
         self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
         self.encoder_final = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
-        if self.opt.vae:
-            self.vae()
-        else:
-            self.lt_add()
+
+        self.lt_add()
 
         self.decoder_2 = self.conv2d_transpose(self.encode_out, filters=32, name="conv2d_trans_2")
         self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
@@ -139,13 +134,13 @@ class Autoencoder(object):
         self.output_images_1 = tf.image.convert_image_dtype(self.output_images, tf.float32, saturate=True)
 
 
-    def conv2d(self, bottom, filters, kernel_size=[5,5], stride=2, padding="SAME", name="conv2d"):
+    def conv2d(self, bottom, filters, kernel_size=[3,3], stride=2, padding="SAME", name="conv2d"):
         layer = tf.layers.conv2d(bottom, filters, kernel_size, stride, padding)
         layer = tf.layers.batch_normalization(layer)
         layer = tf.nn.relu(layer)
         return layer        
     
-    def conv2d_transpose(self, bottom, filters, kernel_size=[5,5], stride=2, padding="SAME", name="conv2d_trans"):
+    def conv2d_transpose(self, bottom, filters, kernel_size=[3,3], stride=2, padding="SAME", name="conv2d_trans"):
         layer = tf.layers.conv2d_transpose(bottom, filters, kernel_size, stride, padding)
         layer = tf.layers.batch_normalization(layer)
         layer = tf.nn.relu(layer)
@@ -340,33 +335,13 @@ class Autoencoder(object):
         self.bestmodel_saver.save(session, self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/bestmodel/')
         train_writer.close()
         val_writer.close()
+
+        print('Successfully completed training')
         print(':)')
 
 
-    def preprocess(self):
-        ims = tf.unstack(self.input_images, num=self.opt.batch_size, axis=0)
-        process_imgs = []
-        image_size = self.opt.image_size
-        stds = []
-        means = []
-
-        for image in ims:
-            image = tf.random_crop(image, [image_size, image_size, 3])
-            std = tf.keras.backend.std(image)
-            mean = tf.reduce_mean(image)
-            image = tf.image.per_image_standardization(image)*self.opt.scale + self.opt.slide
-
-            process_imgs.append(image)
-            stds.append(std)
-            means.append(mean)
-
-
-        self.input_images_1 = tf.stack(process_imgs)
-        self.std = tf.stack(stds)
-        self.mean = tf.stack(means)
-
     def tester(self, session):
-        print('enter testing')
+        print('Enter Testing')
         if not os.path.isfile(self.opt.pipeline + '/models/checkpoint'):
             print("MODEL NOT TRAINED. RETRAIN IMMEDIATELY")
             return
@@ -374,30 +349,53 @@ class Autoencoder(object):
             print("RESTORE")
             self.saver.restore(session, tf.train.latest_checkpoint(self.opt.precursor + self.opt.log_dir_base + self.opt.category + self.opt.name + '/models/'))
         sys.stdout.flush()
-        training_handle = session.run(self.train_iterator.string_handle())
+
+
+        gen_code_handle = session.run(self.generate_code_iterator.string_handle())
+        feed_dict_gen_code = {self.learning_rate:self.opt.learning_rate, self.handle:gen_code_handle}
+        start = True
+        while True:
+            try:
+                latent_code, addrs_code, label = session.run([self.latent, self.addrs, self.ans], feed_dict_test)
+                if start:
+                    latent_codes_ref = latent_code
+                    addrs_codes_ref = addrs_code
+                    labels_ref = label
+                    start = False
+                else:
+                    latent_codes_ref = np.concatenate(latent_codes, latent_code)
+                    addrs_codes_ref = np.concatenate(addrs_codes, addrs_code)
+                    labels_ref = np.concatenate(labels, label)
+            except:
+                print('dataset iteration finished')
+                break
+
+
         validation_handle = session.run(self.val_iterator.string_handle())
         num_iter = len(self.dataset.val_addrs)//self.opt.batch_size
+        feed_dict_test = {self.learning_rate:self.opt.learning_rate, self.handle:validation_handle}
+        output_feed = [self.latent, self.input_images_2, self.output_images_1, self.ans, self.addrs, self.accuracy]
 
-        feed_dict_val = {self.learning_rate:self.opt.learning_rate, self.handle:validation_handle}
-        output_feed = [self.latent, self.input_images_2, self.input_images, self.output_images_1, self.ans, self.mean, self.std, self.accuracy]
-        score = 0
+        top_k = 0
         total_acc = 0
+
         for mini in range(num_iter):
 
-            lat_vec, input_im, input_im_1, output_im, label, mn, std, acc = session.run(output_feed, feed_dict_val)
+            latent_query, input_im, output_im, label_query, addr_query, acc = session.run(output_feed, feed_dict_val)
 
-            self.autovis(mini, input_im, output_im)
-            self.simrank(mini, lat_vec, label, input_im)
-            score += self.evaluation_score(lat_vec, label, self.opt.batch_size)
+            utils.autovis(mini, input_im, output_im, self.opt.batch_size, self.opt.figline)
+            utils.simrank(mini, latent_query, latent_codes_ref, addr_query, addrs_codes_ref, self.opt)
+            top_k += utils.top_k_score(latent_query, latent_codes_ref, label_query, labels_ref, self.opt.K, self.opt.similarity_distance)
 
             total_acc += acc
 
-        score = score / num_iter
+        top_k_avg = top_k / num_iter
         report_acc = total_acc/num_iter
+
         if not os.path.isfile(self.opt.resultline):
             open(self.opt.resultline, 'a').close()
         with open(self.opt.resultline, 'a+') as f:
-            f.write(str(self.opt.ID) + ',' + str(score))
+            f.write(str(self.opt.ID) + ',' + str(top_k_avg))
             f.write('\n')
 
         if not os.path.isfile(self.opt.accline):
@@ -406,9 +404,21 @@ class Autoencoder(object):
             f.write(str(self.opt.ID) + ',' + str(report_acc))
             f.write('\n')
 
-        print('Final Score:', score)
+        print('Top K:', score)
+        print('Final Accuracy:', report_acc)
         print('Successfully completed testing :)')
 
+    def preprocess(self):
+        ims = tf.unstack(self.input_images, num=self.opt.batch_size, axis=0)
+        process_imgs = []
+        image_size = self.opt.image_size
+
+        for image in ims:
+            image = tf.random_crop(image, [image_size, image_size, 3])
+            image = tf.image.per_image_standardization(image)*self.opt.scale + self.opt.slide
+            process_imgs.append(image)
+
+        self.input_images_1 = tf.stack(process_imgs)
 
     def deprocess(self, images, mean, stdev, norm):
         print(mean.shape, 'mean shape')
@@ -432,102 +442,3 @@ class Autoencoder(object):
             process_imgs.append(image)
 
         return np.concatenate(process_imgs)
-
-    def autovis(self, id_num, inputim, outputim):
-        inims = np.squeeze(np.split(inputim, self.opt.batch_size))
-        outims = np.squeeze(np.split(outputim, self.opt.batch_size))
-
-        print(inims[0].shape, 'input images shape')
-        print(outims[0].shape, 'output images shape')
-
-        fig = plt.figure()
-        numofpairs = 1
-
-        for original, modified in zip(inims, outims):
-
-            if numofpairs == 21:
-                break
-            ax = fig.add_subplot(5,4,numofpairs)
-            ax.imshow(original)
-            numofpairs += 1
-            ax = fig.add_subplot(5,4,numofpairs)
-            ax.imshow(modified)
-            numofpairs += 1
-
-        if not os.path.exists(self.opt.figline + 'autovis/'):
-            os.makedirs(self.opt.figline + 'autovis/')
-
-        plt.axis('off')
-        plt.savefig(self.opt.figline + 'autovis/' + str(id_num) + '.pdf', dpi=1000)
-        plt.close()
-
-    def simrank(self, id_num, lat_batch, lab_batch, inputim):
-        latvecs = np.squeeze(np.split(lat_batch, self.opt.batch_size))
-        labels = np.squeeze(np.split(lab_batch, self.opt.batch_size))
-        inims = np.squeeze(np.split(inputim, self.opt.batch_size))
-
-        print(latvecs[0].shape, 'latent vector shape')
-        print(labels[0].shape, 'label shape')
-
-        dim, k = 5,5
-        fig = plt.figure()
-
-        for i in range(dim):
-            knn = self.knn_search(latvecs[i], latvecs, k, inims)
-            for j in range(k):
-
-                ax = fig.add_subplot(dim, k, i*5 + j + 1)
-                ax.imshow(knn[j])
-
-        if not os.path.exists(self.opt.figline + 'simrank/'):
-            os.makedirs(self.opt.figline + 'simrank/')
-        plt.axis('off')
-        plt.savefig(self.opt.figline + 'simrank/' + str(id_num) + '.pdf', dpi=1000)
-        plt.close()
-
-
-    @staticmethod
-    def evaluation_score(lat_batch, lab_batch, batch_size):
-        # Metric to evaluate different networks
-        latvecs = np.squeeze(np.split(lat_batch, batch_size))
-        labels = np.squeeze(np.split(lab_batch, batch_size))
-
-        label_map = {}
-
-        for l in labels:
-            if l in label_map:
-                label_map[l] += 1
-            else: label_map[l] = 1
-
-        score = 0
-        for ind, vec in enumerate(latvecs):
-            knn = Autoencoder.knn_search(vec, latvecs, -1, labels)
-            for i, l in enumerate(knn):
-                if l == labels[ind]:
-                    score += i/label_map[l]
-        return score
-
-
-    @staticmethod
-    def knn_search(x, D, K, ims):
-        '''
-        KNN search algorithm.
-        Sort images in order by most similar
-        according to Manhattan distance
-        '''
-        new_array = []
-        final = []
-        for item in D:
-            new_array.append(np.sum(np.square(np.subtract(x, item))))
-        ind_array = np.argsort(new_array)
-        for item in ind_array:
-            final.append(ims[item])
-        return final[0:K]
-
-def gradient_summaries(grad, var, opt):
-
-    if opt.extense_summary:
-        tf.summary.scalar(var.name + '/gradient_mean', tf.norm(grad))
-        tf.summary.scalar(var.name + '/gradient_max', tf.reduce_max(grad))
-        tf.summary.scalar(var.name + '/gradient_min', tf.reduce_min(grad))
-        tf.summary.histogram(var.name + '/gradient', grad)

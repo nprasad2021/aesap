@@ -4,13 +4,13 @@ import parameters
 #### PARAMETERS
 # Final TUNING
 dsts = ['all_data', 'open_data', 'sap_data']
-lrs = [.001, .0005, .0001]
-img_sizes = [144, 192]
+lrs = [.0005, .0001]
+img_sizes = [192, 144]
 scale = [1]
 slide = [0]
-bs = [32, 64]
+bs = [128, 64, 32]
 build = [3,2,1]
-num_units = [50, 100, 150, 200]
+num_units = [200, 150, 100, 50]
 vae = [True, False]
 
 
@@ -34,7 +34,7 @@ def gen_tune_exp(precursor):
 									for v in vae:
 
 
-										name = 'accuracy' #+ str(lr) + '_' + dst + '_' + str(imsize) + '_sc' + str(sc) + '_sl' + str(sl) + '_bui' + str(bill) + '_l' + str(l) + '_bs' + str(b)
+										name = 'modelK'
 										opt += [parameters.Experiment(identity=idx, name=name, precursor=precursor, datatype=dst)]
 										opt[-1].image_size = imsize
 										opt[-1].learning_rate = lr
@@ -46,8 +46,9 @@ def gen_tune_exp(precursor):
 										opt[-1].restart = True
 										opt[-1].mode = 'test'
 										opt[-1].num_units = hidden
-										opt[-1].category = 'arch/'
+										opt[-1].category = 'visual/'
 										opt[-1].vae = v
+										opt[-1].loss = 'l1'
 
 										idx += 1
 

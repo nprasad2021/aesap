@@ -15,13 +15,14 @@ import model, inst
 
 
 def main():
-    # load image names with full dir info and corresponding labels
+    
+    # Load Experiment Specifications
     precursor = sys.argv[1]
     ID = int(sys.argv[2])
     factor = int(sys.argv[3])
 
     ID += factor*1000
-    
+
     opt = inst.gen_tune_exp(precursor)[ID]
     opt.reinitialize_paths()
 

@@ -86,7 +86,8 @@ class Dataset:
 				feature = {trval + '/label': self._int64_feature(labels[i]),
 					trval + '/image': self._bytes_feature(img),
 					trval + '/width': self._int64_feature(width),
-					trval + '/height': self._int64_feature(height)}
+					trval + '/height': self._int64_feature(height),
+					trval + '/addr': self._bytes_feature(addrs[i])}
 				example = tf.train.Example(features=tf.train.Features(feature=feature))
 				writer.write(example.SerializeToString())
 			writer.close()
@@ -95,6 +96,7 @@ class Dataset:
 	def write(self):
 		self.load_data()
 		self.write_TFRecords()
+
 
 	##### NON-REPEATABLE DATASET
 	def create_dataset(self, set_name, repeat=True):
@@ -106,7 +108,8 @@ class Dataset:
 	    	features = {set_name + '/label': tf.FixedLenFeature((), tf.int64, default_value=1),
 	    		set_name + '/image': tf.FixedLenFeature((), tf.string, default_value=""),
 	    		set_name + '/height': tf.FixedLenFeature([], tf.int64),
-	    		set_name + '/width': tf.FixedLenFeature([], tf.int64)}
+	    		set_name + '/width': tf.FixedLenFeature([], tf.int64),
+	    		set_name + '/addr': tf.FixedLenFeature([], tf.string, default_value="")}
 
 	    	parsed_features = tf.parse_single_example(example_proto, features)
 	    	image = tf.image.decode_jpeg(parsed_features[set_name + '/image'],channels=3)
@@ -117,17 +120,52 @@ class Dataset:
 	    	image = tf.reshape(image, S)
 	    	image = tf.image.resize_images(image, [image_size, image_size])
 	    	
-	    	return image, parsed_features[set_name + '/label']
+	    	return image, parsed_features[set_name + '/label'], parsed_features[set_name + '/addr']
 
 	    tfrecords_path = self.opt.tfr_out
-
 	    filenames = [tfrecords_path + set_name + '.tfrecords']
 
 	    dataset = tf.data.TFRecordDataset(filenames)
 	    dataset = dataset.map(_parse_function)
 	    if repeat:
-	    	dataset = dataset.repeat()  # Repeat the input indefinitely.
+	    	dataset = dataset.repeat()
 	    return dataset.batch(self.opt.batch_size)
+
+	def create_result_dataset(self, set_name, repeat=False):
+	    image_size = tf.cast(self.opt.image_size, tf.int32)
+	    # Transforms a scalar string `example_proto` into a pair of a scalar string and
+	    # a scalar integer, representing an image and its label, respectively.
+	    def _parse_function(example_proto):
+
+	    	features = {set_name + '/label': tf.FixedLenFeature((), tf.int64, default_value=1),
+	    		set_name + '/image': tf.FixedLenFeature((), tf.string, default_value=""),
+	    		set_name + '/height': tf.FixedLenFeature([], tf.int64),
+	    		set_name + '/width': tf.FixedLenFeature([], tf.int64),
+	    		set_name + '/addr': tf.FixedLenFeature([], tf.string, default_value="")}
+
+	    	parsed_features = tf.parse_single_example(example_proto, features)
+	    	image = tf.image.decode_jpeg(parsed_features[set_name + '/image'],channels=3)
+	    	image = tf.cast(image, tf.float32)
+
+	    	S = tf.stack([tf.cast(parsed_features[set_name + '/height'], tf.int32),
+	    		tf.cast(parsed_features[set_name + '/width'], tf.int32), 3])
+	    	image = tf.reshape(image, S)
+	    	image = tf.image.resize_images(image, [image_size, image_size])
+	    	
+	    	return image, parsed_features[set_name + '/label'], parsed_features[set_name + '/addr']
+
+	    tfrecords_path = self.opt.tfr_eval
+	    filenames = [tfrecords_path + set_name + '.tfrecords']
+
+	    dataset = tf.data.TFRecordDataset(filenames)
+	    dataset = dataset.map(_parse_function)
+
+	    if repeat:
+	    	dataset = dataset.repeat()
+
+	    return dataset.batch(self.opt.batch_size)
+
+
 
 class ImageCoder(object):
     """Helper class that provides TensorFlow image coding utilities."""

@@ -10,6 +10,7 @@ class Experiment(object):
 
         self.reuse_TFRecords = True
         self.tdata = datatype
+        self.evaluation_data = 'sap_data'
 
         ### Directory Details
         self.log_dir_base = "log/"
@@ -24,6 +25,7 @@ class Experiment(object):
         self.similarity_distance = 'cosine'
         self.classification = False
         self.vae = False
+        self.display_num = 20
 
         self.save_every = 1000
         self.decay_every = 1000
@@ -34,8 +36,6 @@ class Experiment(object):
         self.num_units = 150
 
         self.mode = 'both'
-        self.train_dir = self.precursor + 'data/' + self.tdata +  '/train/' # Training Directory
-        self.val_dir = self.precursor + 'data/' + self.tdata + '/val/' # Validation Directory
         self.outfile = 'finalresults.txt'
 
         #### Hyperparameters
@@ -50,18 +50,23 @@ class Experiment(object):
 
         self.pipeline = self.precursor + self.log_dir_base + self.category + self.name
         self.figline = self.precursor + self.overname + '_' + self.fig_dir_base + self.category + self.name + '/'
-        self.resultline = self.precursor + self.overname + '_' + self.results
-        self.accline = self.precursor + self.overname + '_' + self.accuracy
+        self.resultline = self.precursor + self.overname + '_' + self.fig_dir_base + self.results
+        self.accline = self.precursor + self.overname + '_' + self.fig_dir_base + self.accuracy
         self.tfr_out = self.precursor + 'data/' + self.tdata + '/records/' # TFRecords Output Path
+        self.tfr_eval = self.precursor + 'data/' + self.evaluation_data + '/records/'
+        self.train_dir = self.precursor + 'data/' + self.tdata +  '/train/' # Training Directory
+        self.val_dir = self.precursor + 'data/' + self.tdata + '/val/' # Validation Directory
 
     def reinitialize_paths(self):
         self.pipeline = self.precursor + self.log_dir_base + self.category + self.name
         self.figline = self.precursor + self.overname + '_' + self.fig_dir_base + self.category + self.name + '/'
-        self.resultline = self.precursor + self.overname + '_' + self.results
-        self.accline = self.precursor + self.overname + '_' + self.accuracy
+        self.resultline = self.precursor + self.overname + '_' + self.fig_dir_base + self.results
+        self.accline = self.precursor + self.overname + '_' + self.fig_dir_base + self.accuracy
         self.tfr_out = self.precursor + 'data/' + self.tdata + '/records/' # TFRecords Output Path
+        self.tfr_eval = self.precursor + 'data/' + self.evaluation_data + '/records/'
         self.train_dir = self.precursor + 'data/' + self.tdata +  '/train/' # Training Directory
         self.val_dir = self.precursor + 'data/' + self.tdata + '/val/' # Validation Directory
+
 
 
     def __str__(self):
