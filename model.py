@@ -202,9 +202,10 @@ class Autoencoder(object):
             # tf.summary.scalar('reconstruction loss', self.recon_loss)
 
             diff = (self.input_images_1 - self.output_images)/255
+
             if self.opt.loss == 'l2':
                 self.recon_loss = tf.divide(tf.nn.l2_loss(diff), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
-            else: self.recon_loss = tf.divide(tf.reduce_sum(tf.abs(diff)), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
+            else: self.recon_loss = tf.losses.absolute_difference(self.input_images_1/255, self.output_images/255)            
             tf.summary.scalar('reconstruction loss', self.recon_loss)
 
             #----------CROSS ENTROPY LOSS------------------------
