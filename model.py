@@ -348,6 +348,7 @@ class Autoencoder(object):
                     start = False
                 else:
                     latent_codes_ref = np.concatenate(latent_codes_ref, latent_code, axis=0)
+                    print(latent_codes_ref.shape, 'iteration shape')
                     addrs_codes_ref = np.concatenate(addrs_codes_ref, addrs_code, axis=0)
                     labels_ref = np.concatenate(labels_ref, label, axis=0)
             except:
