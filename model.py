@@ -364,7 +364,7 @@ class Autoencoder(object):
 
         for mini in range(num_iter):
 
-            latent_query, input_im, output_im, label_query, addr_query, acc = session.run(output_feed, feed_dict_val)
+            latent_query, input_im, output_im, label_query, addr_query, acc = session.run(output_feed, feed_dict_test)
 
             utils.autovis(mini, input_im, output_im, self.opt.batch_size, self.opt.figline)
             utils.simrank(mini, latent_query, latent_codes_ref, addr_query, addrs_codes_ref, self.opt)
