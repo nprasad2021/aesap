@@ -165,7 +165,9 @@ class Dataset:
 
 	    return dataset.batch(self.opt.batch_size)
 
-
+def rewrite_TFRecords(dataset, precursor):
+	opt = parameters.Experiment(datatype=dataset, precursor=precursor)
+	tmp = Dataset(opt)
 
 class ImageCoder(object):
     """Helper class that provides TensorFlow image coding utilities."""
@@ -228,5 +230,6 @@ if __name__ == "__main__":
 
 	### Test: tfrecords files for desired dataset load
 	### write_TFRecords()
-	opt = parameters.Experiment()
-	aesap = Dataset(opt)
+	precursor = sys.argv[1]
+	for dataset in ['sap_data', 'all_data', 'open_data']:
+		rewrite_TFRecords(dataset=dataset, precursor=precursor)
