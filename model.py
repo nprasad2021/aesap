@@ -337,6 +337,7 @@ class Autoencoder(object):
         gen_code_handle = session.run(self.generate_code_iterator.string_handle())
         feed_dict_gen_code = {self.learning_rate:self.opt.learning_rate, self.handle:gen_code_handle}
         start = True
+        num_iter_true = 0
         while True:
             try:
                 latent_code, addrs_code, label = session.run([self.latent, self.addrs, self.ans], feed_dict_gen_code)
@@ -351,10 +352,11 @@ class Autoencoder(object):
                     print(latent_codes_ref.shape, 'iteration shape')
                     addrs_codes_ref = np.concatenate(addrs_codes_ref, addrs_code, axis=0)
                     labels_ref = np.concatenate(labels_ref, label, axis=0)
+                num_iter_true += 1
             except:
                 print('dataset iteration finished')
                 break
-
+        print('num_iter_true', num_iter_true)
         print('latent codes ref shape:', latent_codes_ref.shape)
         print('latent code initial shape', latent_code.shape)
 
