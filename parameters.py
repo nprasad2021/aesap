@@ -18,6 +18,7 @@ class Experiment(object):
         self.results = 'evaluation.txt'
         self.accuracy = 'accuracy.txt'
         self.precursor = precursor # Path to root
+        self.kernel_size = [7,7]
 
 
         self.keep = 1 # Models to keep

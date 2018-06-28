@@ -45,7 +45,6 @@ class Autoencoder(object):
             self.add_placeholders()
             if self.opt.build == 1: self.build_1()
             elif self.opt.build == 2: self.build_2()
-            elif self.opt.build == 3: self.build_3()
             self.add_loss()
 
         params = tf.trainable_variables()
@@ -116,24 +115,10 @@ class Autoencoder(object):
         tf.summary.image('output', self.output_images)
         self.output_images_1 = tf.image.convert_image_dtype(self.output_images, tf.float32, saturate=True)
 
-    def build_3(self):
 
-        self.input_images_2 = tf.image.convert_image_dtype(self.input_images_1, tf.float32, saturate=True)
-        self.encoder_1 = self.conv2d(self.input_images_1, filters=16, kernel_size=[7,7], name="conv2_1")
-        self.encoder_2 = self.conv2d(self.encoder_1, filters=32, name="conv2_2")
-        self.encoder_final = self.conv2d(self.encoder_2, filters=64, name="conv2_3")
-
-        self.lt_add()
-
-        self.decoder_2 = self.conv2d_transpose(self.encode_out, filters=32, name="conv2d_trans_2")
-        self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
-        self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
-        self.output_images = self.decoder_4
-        tf.summary.image('output', self.output_images)
-        self.output_images_1 = tf.image.convert_image_dtype(self.output_images, tf.float32, saturate=True)
-
-
-    def conv2d(self, bottom, filters, kernel_size=[3,3], stride=2, padding="SAME", name="conv2d"):
+    def conv2d(self, bottom, filters, kernel_size=None, stride=2, padding="SAME", name="conv2d"):
+        if kernel_size is None:
+            kernel_size = self.opt.kernel_size
         layer = tf.layers.conv2d(bottom, filters, kernel_size, stride, padding)
         layer = tf.layers.batch_normalization(layer)
         layer = tf.nn.relu(layer)
@@ -180,8 +165,8 @@ class Autoencoder(object):
         self.latent = tf.reshape(self.encoder_final, [-1, dim], name="feature")
         self.encode_out = self.encoder_final
 
-        self.class_1 = tf.layers.dense(self.latent, 200, tf.nn.relu)
-        self.class_2 = tf.layers.dense(self.class_1, 50, tf.nn.relu)
+        self.class_1 = tf.layers.dense(self.latent, self.opt.num_units, tf.nn.relu)
+        self.class_2 = tf.layers.dense(self.class_1, self.opt.num_units, tf.nn.relu)
         self.final_sm = tf.layers.dense(self.class_2, len(self.dataset.all_labels))
 
 
@@ -223,15 +208,11 @@ class Autoencoder(object):
 
             #----------CROSS ENTROPY LOSS------------------------
             
-            if self.opt.build == 3:
-                self.accuracy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.ans, logits=self.final_sm))
-                tf.summary.scalar('cross_entropy', self.accuracy_loss)
+            self.accuracy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.ans, logits=self.final_sm))
+            tf.summary.scalar('cross_entropy', self.accuracy_loss)
 
             #----------TOTAL LOSS------------------
-            if self.opt.build == 3:
-                self.loss = self.recon_loss + self.accuracy_loss
-            else:
-                self.loss = self.recon_loss
+            self.loss = self.recon_loss + self.accuracy_loss
             tf.summary.scalar("total loss", self.loss)
 
             correct_prediction = tf.equal(tf.argmax(self.final_sm, 1), self.ans)
