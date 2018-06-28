@@ -40,7 +40,6 @@ class Autoencoder(object):
         self.train_iterator = train_dataset.make_one_shot_iterator()
         self.val_iterator = val_dataset.make_one_shot_iterator()
         self.generate_code_iterator = generate_code_dataset.make_one_shot_iterator()
-        self.test_iterator = test_val_dataset.make_one_shot_iterator()
 
         with tf.variable_scope("one_shot_ae", initializer=tf.contrib.layers.variance_scaling_initializer(factor=1.0, uniform=True)):
             self.add_placeholders()
@@ -216,7 +215,7 @@ class Autoencoder(object):
             # print(self.recon_loss.shape, 'recon_loss shape')
             # tf.summary.scalar('reconstruction loss', self.recon_loss)
 
-            diff = self.input_images_1 - self.output_images
+            diff = (self.input_images_1 - self.output_images)/255
             if self.opt.loss == 'l2':
                 self.recon_loss = tf.divide(tf.nn.l2_loss(diff), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
             else: self.recon_loss = tf.divide(tf.reduce_sum(tf.abs(diff)), tf.cast(tf.shape(diff)[0], dtype=tf.float32))
@@ -250,15 +249,17 @@ class Autoencoder(object):
         feed_dict_train = {self.learning_rate:self.opt.learning_rate, self.handle:self.training_handle}
         feed_dict_val = {self.learning_rate:self.opt.learning_rate, self.handle:self.validation_handle}
 
-        output_feed_train = [self.updates, self.summaries, self.global_step, self.loss, self.accuracy]
+        output_feed_train = [self.updates, self.summaries, self.global_step, self.loss, self.recon_loss, self.accuracy_loss, self.accuracy]
         output_feed_val = [self.summaries, self.global_step, self.loss, self.accuracy]
 
         if iStep == 0:
             print("* epoch: " + str(float(k) / float(self.num_images_epoch)))
-            [_, summaries, global_step, loss, acc] = session.run(output_feed_train, feed_dict_train)
+            [_, summaries, global_step, loss, reconl, accl, acc] = session.run(output_feed_train, feed_dict_train)
 
             train_writer.add_summary(summaries, k)
             print('train loss:', loss)
+            print('reconstruction loss:', reconl)
+            print('cross entropy loss:', accl)
             print('train acc:', acc)
             sys.stdout.flush()
 
@@ -276,7 +277,7 @@ class Autoencoder(object):
             print('val acc:', acc)
             sys.stdout.flush()
         else:
-            [_, summaries, global_step, loss, acc] = session.run(output_feed_train, feed_dict_train)
+            [_, _, global_step, _, _, _, _] = session.run(output_feed_train, feed_dict_train)
 
         # Scheduling learning rate
         if int(global_step + 1) % self.opt.decay_every == 0:

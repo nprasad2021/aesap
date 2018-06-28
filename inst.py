@@ -18,7 +18,7 @@ def gen_tune_exp(precursor):
 
 	opt = []
 	idx = 0
-
+	print(precursor)
 	# PARAMETERIZE BASELINE
 	opt += [parameters.Experiment(identity=idx, precursor=precursor)]
 
@@ -44,11 +44,11 @@ def gen_tune_exp(precursor):
 										opt[-1].batch_size = b
 										opt[-1].build = bill
 										opt[-1].restart = True
-										opt[-1].mode = 'test'
+										opt[-1].mode = 'both'
 										opt[-1].num_units = hidden
 										opt[-1].category = 'visual/'
 										opt[-1].vae = v
-										opt[-1].loss = 'l1'
+										opt[-1].loss = 'l2'
 
 										idx += 1
 
