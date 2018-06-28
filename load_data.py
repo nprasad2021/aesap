@@ -167,6 +167,7 @@ class Dataset:
 
 def rewrite_TFRecords(dataset, precursor):
 	opt = parameters.Experiment(datatype=dataset, precursor=precursor)
+	opt.reuse_TFRecords = False
 	tmp = Dataset(opt)
 
 class ImageCoder(object):
