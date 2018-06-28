@@ -44,12 +44,12 @@ def gen_tune_exp(precursor):
 										opt[-1].batch_size = b
 										opt[-1].build = bill
 										opt[-1].restart = True
-										opt[-1].mode = 'test'
+										opt[-1].mode = 'both'
 										opt[-1].num_units = hidden
 										opt[-1].category = 'visual/'
 										opt[-1].loss = l
 										opt[-1].kernel_size = ks
-										opt[-1].num_epochs = 5
+										opt[-1].num_epochs = 20
 
 
 										idx += 1
