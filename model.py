@@ -30,7 +30,7 @@ class Autoencoder(object):
         val_dataset = self.dataset.create_dataset(set_name='val')
 
         ## Non-repeatable Datasets for Testing
-        generate_code_dataset = self.dataset.create_dataset_result(set_name='val', repeat=False)
+        generate_code_dataset = self.dataset.create_result_dataset(set_name='val', repeat=False)
 
         # Handles to switch datasets
         self.handle = tf.placeholder(tf.string, shape=[])

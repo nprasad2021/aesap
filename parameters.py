@@ -21,7 +21,7 @@ class Experiment(object):
 
 
         self.keep = 1 # Models to keep
-        self.K = 10 # Similarity Score, show _ queries
+        self.K = 5 # Similarity Score, show _ queries
         self.similarity_distance = 'cosine'
         self.classification = False
         self.vae = False
