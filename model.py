@@ -339,7 +339,7 @@ class Autoencoder(object):
         start = True
         while True:
             try:
-                latent_code, addrs_code, label = session.run([self.latent, self.addrs, self.ans], feed_dict_test)
+                latent_code, addrs_code, label = session.run([self.latent, self.addrs, self.ans], feed_dict_gen_code)
                 if start:
                     latent_codes_ref = latent_code
                     addrs_codes_ref = addrs_code
@@ -353,6 +353,7 @@ class Autoencoder(object):
                 print('dataset iteration finished')
                 break
 
+        print('latent codes ref shape:', latent_codes_ref.shape)
 
         validation_handle = session.run(self.val_iterator.string_handle())
         num_iter = len(self.dataset.val_addrs)//self.opt.batch_size
