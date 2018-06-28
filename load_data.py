@@ -87,7 +87,7 @@ class Dataset:
 					trval + '/image': self._bytes_feature(img),
 					trval + '/width': self._int64_feature(width),
 					trval + '/height': self._int64_feature(height),
-					trval + '/addr': self._bytes_feature(addrs[i])}
+					trval + '/addr': self._bytes_feature(addrs[i].encode())}
 				example = tf.train.Example(features=tf.train.Features(feature=feature))
 				writer.write(example.SerializeToString())
 			writer.close()
@@ -120,7 +120,7 @@ class Dataset:
 	    	image = tf.reshape(image, S)
 	    	image = tf.image.resize_images(image, [image_size, image_size])
 	    	
-	    	return image, parsed_features[set_name + '/label'], parsed_features[set_name + '/addr']
+	    	return image, parsed_features[set_name + '/label'], parsed_features[set_name + '/addr'].decode()
 
 	    tfrecords_path = self.opt.tfr_out
 	    filenames = [tfrecords_path + set_name + '.tfrecords']
