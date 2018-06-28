@@ -338,6 +338,8 @@ class Autoencoder(object):
         feed_dict_gen_code = {self.learning_rate:self.opt.learning_rate, self.handle:gen_code_handle}
         start = True
         num_iter_true = 0
+        latent_code, addrs_code, label = session.run([self.latent, self.addrs, self.ans], feed_dict_gen_code)
+        
         while True:
             try:
                 latent_code, addrs_code, label = session.run([self.latent, self.addrs, self.ans], feed_dict_gen_code)
