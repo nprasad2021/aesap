@@ -131,7 +131,7 @@ class Dataset:
 	    	dataset = dataset.repeat()
 	    return dataset.batch(self.opt.batch_size)
 
-	def create_result_dataset(self, set_name, repeat=False):
+	def create_result_dataset(self, set_name, repeat=False, batch=False):
 	    image_size = tf.cast(self.opt.image_size, tf.int32)
 	    # Transforms a scalar string `example_proto` into a pair of a scalar string and
 	    # a scalar integer, representing an image and its label, respectively.
@@ -163,7 +163,7 @@ class Dataset:
 	    if repeat:
 	    	dataset = dataset.repeat()
 
-	    return dataset.batch(self.opt.batch_size)
+	    return dataset
 
 def rewrite_TFRecords(dataset, precursor):
 	opt = parameters.Experiment(datatype=dataset, precursor=precursor)
