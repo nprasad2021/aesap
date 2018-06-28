@@ -111,6 +111,7 @@ class Autoencoder(object):
         self.decoder_2 = self.conv2d_transpose(self.encode_out, filters=32, name="conv2d_trans_2")
         self.decoder_3 = self.conv2d_transpose(self.decoder_2, filters=16, name="conv2d_trans_3")
         self.decoder_4 = self.conv2d_transpose(self.decoder_3, filters=3, name="conv2d_trans_4")
+
         self.output_images = self.decoder_4
         tf.summary.image('output', self.output_images)
         self.output_images_1 = tf.image.convert_image_dtype(self.output_images, tf.float32, saturate=True)
