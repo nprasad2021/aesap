@@ -55,8 +55,8 @@ def simrank(id_num, lat_batch, cod, addrs_codes, addr, opt):
         knn = knn_search(latvecs[i], codes, k, addrs_codes, distance[opt.similarity_distance])
         for j in range(k+1):
 
-            if j == 0: ref_image = scipy.misc.imread(str(addr[i]))
-            else: ref_image = scipy.misc.imread(str(knn[j-1]))
+            if j == 0: ref_image = scipy.misc.imread(addr[i].decode())
+            else: ref_image = scipy.misc.imread(knn[j-1].decode())
             search_result[opt.image_size*i:opt.image_size*(i+1), j*opt.image_size:(j+1)*opt.image_size, :] = scipy.misc.imresize(ref_image, (opt.image_size, opt.image_size))
 
     if not os.path.exists(opt.figline + 'simrank/'):
