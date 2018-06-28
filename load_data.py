@@ -120,7 +120,7 @@ class Dataset:
 	    	image = tf.reshape(image, S)
 	    	image = tf.image.resize_images(image, [image_size, image_size])
 	    	
-	    	return image, parsed_features[set_name + '/label'], tf.as_string(parsed_features[set_name + '/addr'])
+	    	return image, parsed_features[set_name + '/label'], parsed_features[set_name + '/addr']
 
 	    tfrecords_path = self.opt.tfr_out
 	    filenames = [tfrecords_path + set_name + '.tfrecords']
