@@ -41,7 +41,7 @@ def autovis(id_num, inputim, outputim, batch_size, figline):
 
 def simrank(id_num, lat_batch, cod, addrs_codes, addr, opt):
     distance = {'cosine':cos_similarity, 'l2':l2_similarity}
-    latvecs = np.squeeze(np.split(lat_batch, batch_size))
+    latvecs = np.squeeze(np.split(lat_batch, opt.batch_size))
     codes = np.squeeze(np.split(cod, cod.shape[0]))
 
     search_result = np.ones(((opt.image_size * min(opt.display_num, opt.batch_size)), opt.image_size * (opt.K + 1), 3), dtype=np.uint8) * 255
