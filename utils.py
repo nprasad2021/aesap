@@ -52,7 +52,7 @@ def simrank(id_num, lat_batch, cod, addrs_codes, addr, opt):
     dim, k = min(opt.display_num, opt.batch_size), opt.K
     for i in range(dim):
 
-        knn = knn_search(latvecs[i], codes, opt.k, addrs_codes, distance[opt.similarity_distance])
+        knn = knn_search(latvecs[i], codes, k, addrs_codes, distance[opt.similarity_distance])
         for j in range(k+1):
 
             if j == 0: ref_image = plt.imread(addr)

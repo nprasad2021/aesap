@@ -341,6 +341,7 @@ class Autoencoder(object):
             try:
                 latent_code, addrs_code, label = session.run([self.latent, self.addrs, self.ans], feed_dict_gen_code)
                 if start:
+                    print('small latent code shape', latent_code.shape)
                     latent_codes_ref = latent_code
                     addrs_codes_ref = addrs_code
                     labels_ref = label
@@ -354,6 +355,7 @@ class Autoencoder(object):
                 break
 
         print('latent codes ref shape:', latent_codes_ref.shape)
+        print('latent code initial shape', latent_code.shape)
 
         validation_handle = session.run(self.val_iterator.string_handle())
         num_iter = len(self.dataset.val_addrs)//self.opt.batch_size
@@ -366,7 +368,7 @@ class Autoencoder(object):
         for mini in range(num_iter):
 
             latent_query, input_im, output_im, label_query, addr_query, acc = session.run(output_feed, feed_dict_test)
-
+            print('latent_query shape', latent_query.shape)
             utils.autovis(mini, input_im, output_im, self.opt.batch_size, self.opt.figline)
             utils.simrank(mini, latent_query, latent_codes_ref, addr_query, addrs_codes_ref, self.opt)
             top_k += utils.top_k_score(latent_query, latent_codes_ref, label_query, labels_ref, self.opt.K, self.opt.similarity_distance)
