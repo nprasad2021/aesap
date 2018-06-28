@@ -1,6 +1,6 @@
 import os
 import random
-import cv2 as cv
+import scipy
 import numpy as np
 import matplotlib as mpl
 mpl.use('Agg')
@@ -33,7 +33,7 @@ def autovis(id_num, inputim, outputim, batch_size, figline):
 
     frame1.axes.get_xaxis().set_visible(False)
     frame1.axes.get_yaxis().set_visible(False)
-    
+
     plt.axis('off')
     plt.savefig(figline + 'autovis/' + str(id_num) + '.pdf', dpi=1000)
     plt.close()
@@ -54,14 +54,14 @@ def simrank(id_num, lat_batch, cod, addrs_codes, addr, opt):
         knn = knn_search(latvecs[i], codes, opt.k, addrs_codes, distance[opt.similarity_distance])
         for j in range(k+1):
 
-            if j == 0: ref_image = cv.imread(addr)
-            else: ref_image = cv.imread(knn[j-1])
-            search_result[opt.image_size*i:opt.image_size*(i+1), j*opt.image_size:(j+1)*opt.image_size, :] = cv.resize(ref_image, (opt.image_size, opt.image_size))
+            if j == 0: ref_image = plt.imread(addr)
+            else: ref_image = plt.imread(knn[j-1])
+            search_result[opt.image_size*i:opt.image_size*(i+1), j*opt.image_size:(j+1)*opt.image_size, :] = scipy.misc.imresize(ref_image, (opt.image_size, opt.image_size))
 
     if not os.path.exists(opt.figline + 'simrank/'):
         os.makedirs(opt.figline + 'simrank/')
 
-    cv.imwrite(opt.figline + 'simrank/' + str(id_num) + '.pdf', search_result)
+    scipy.misc.imsave(opt.figline + 'simrank/' + str(id_num) + '.pdf', search_result)
 
 
 def top_k_score(latent_query, latent_reference, labels_query, labels_reference, K, similarity_metric):
