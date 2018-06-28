@@ -163,7 +163,7 @@ class Dataset:
 	    if repeat:
 	    	dataset = dataset.repeat()
 
-	    return dataset
+	    return dataset.batch(self.opt.batch_size)
 
 def rewrite_TFRecords(dataset, precursor):
 	opt = parameters.Experiment(datatype=dataset, precursor=precursor)
