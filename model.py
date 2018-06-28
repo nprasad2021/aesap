@@ -222,9 +222,10 @@ class Autoencoder(object):
             tf.summary.scalar('reconstruction loss', self.recon_loss)
 
             #----------CROSS ENTROPY LOSS------------------------
+            
             if self.opt.build == 3:
                 self.accuracy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.ans, logits=self.final_sm))
-            tf.summary.scalar('cross_entropy', self.accuracy_loss)
+                tf.summary.scalar('cross_entropy', self.accuracy_loss)
 
             #----------TOTAL LOSS------------------
             if self.opt.build == 3:
