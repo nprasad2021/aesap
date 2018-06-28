@@ -339,7 +339,7 @@ class Autoencoder(object):
         start = True
         num_iter_true = 0
         latent_code, addrs_code, label = session.run([self.latent, self.addrs, self.ans], feed_dict_gen_code)
-        
+
         while True:
             try:
                 latent_code, addrs_code, label = session.run([self.latent, self.addrs, self.ans], feed_dict_gen_code)
@@ -395,7 +395,7 @@ class Autoencoder(object):
             f.write(str(self.opt.ID) + ',' + str(report_acc))
             f.write('\n')
 
-        print('Top K:', score)
+        print('Top K:', top_k_avg)
         print('Final Accuracy:', report_acc)
         print('Successfully completed testing :)')
 
