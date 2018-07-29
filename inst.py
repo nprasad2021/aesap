@@ -4,15 +4,15 @@ import parameters
 #### PARAMETERS
 # Final TUNING
 dsts = ['all_data', 'open_data', 'sap_data']
-lrs = [.0005, .0001]
-img_sizes = [224, 192, 144]
+lrs = [.0005]
+img_sizes = [192]
 scale = [1]
 slide = [0]
-bs = [128, 64, 32]
-build = [2,1]
-num_units = [200, 150, 100, 50]
-kernel_size = [[7,7],[5,5],[3,3]]
-losses = ['l1', 'l2']
+bs = [64]
+build = [1]
+num_units = [150]
+kernel_size = [[7,7]]
+losses = ['l1']
 
 
 def gen_tune_exp(precursor):

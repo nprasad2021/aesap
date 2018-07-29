@@ -5,17 +5,18 @@
 import os
 import time
 import sys
+import argparse
 
-# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-# os.environ["CUDA_VISIBLE_DEVICES"]="2"
-# os.environ["TF_CPP_MIN_LOG_LEVEL"]="2"
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]="3"
+os.environ["TF_CPP_MIN_LOG_LEVEL"]="2"
 
 import tensorflow as tf
 import model, inst
 
 
 def main():
-    
+
     # Load Experiment Specifications
     precursor = sys.argv[1]
     ID = int(sys.argv[2])
@@ -44,6 +45,8 @@ def main():
 
 
 if __name__ == "__main__":
+    
+    
     start_time = time.time()
     main()
     print("Execution time:", time.time()-start_time)
